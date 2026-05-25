@@ -1,338 +1,317 @@
-import React, { useState } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { StatusBar } from 'expo-status-bar'
+import React from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 import {
-    StyleSheet,
-    Text,
-    View,
-    ScrollView,
-    Image,
-    TouchableOpacity,
-    Switch,
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+  Switch,
+  useColorScheme,
 } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
-
-// Sub-components
 import SectionHeader from '@/components/SectionHeader';
 import SettingRow from '@/components/SettingRow';
 import StorageProgressBar from '@/components/StorageProgressBar';
+import { darkTheme, lightTheme } from '@/constants/theme';
 
 const SettingsScreen = () => {
-    const [isDarkMode, setIsDarkMode] = useState(true);
+  const colorScheme = useColorScheme() ?? 'dark';
+  const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
+  const isDarkMode = colorScheme === 'dark';
 
-    return (
-        <SafeAreaView style={styles.container}>
-            <StatusBar style='auto' />
-            {/* App Header */}
-            <View style={styles.header}>
-                <View style={styles.headerTitleContainer}>
-                    <Ionicons name="code-slash" size={22} color="#8585FF" style={styles.headerIcon} />
-                    <Text style={styles.headerText}>DevSnippets AI</Text>
-                </View>
-                <Image
-                    source={{ uri: 'https://i.pravatar.cc/150?img=68' }} // Placeholder for user avatar
-                    style={styles.topAvatar}
-                />
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <StatusBar style={isDarkMode ? 'light' : 'dark'} />
+
+      <View style={[styles.header, { borderBottomColor: theme.border }]}>
+        <View style={styles.headerTitleContainer}>
+          <Ionicons name="code-slash" size={22} color={theme.primary} style={styles.headerIcon} />
+          <Text style={[styles.headerText, { color: theme.text }]}>DevSnippets AI</Text>
+        </View>
+        <Image
+          source={{ uri: 'https://i.pravatar.cc/150?img=68' }}
+          style={[styles.topAvatar, { borderColor: theme.switchTrackOff }]}
+        />
+      </View>
+
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        <SectionHeader title="ACCOUNT" textStyle={{ color: theme.mutedText }} />
+        <TouchableOpacity
+          style={[styles.accountCard, { backgroundColor: theme.card, borderColor: theme.border }]}
+          activeOpacity={0.7}
+        >
+          <View style={styles.accountInfo}>
+            <View style={styles.avatarContainer}>
+              <Image source={{ uri: 'https://i.pravatar.cc/150?img=68' }} style={styles.accountAvatar} />
+              <View style={[styles.activeStatusDot, { backgroundColor: theme.success, borderColor: theme.card }]} />
             </View>
+            <View style={styles.accountTextContainer}>
+              <Text style={[styles.accountName, { color: theme.text }]}>Tejas Derle</Text>
+              <Text style={[styles.accountEmail, { color: theme.subText }]}>tejasderle.dev@snippets.ai</Text>
+            </View>
+          </View>
+          <Feather name="chevron-right" size={20} color={theme.subText} />
+        </TouchableOpacity>
 
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        <SectionHeader title="APPEARANCE" textStyle={{ color: theme.mutedText }} />
+        <View style={[styles.groupedRowsContainer, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <SettingRow
+            icon={<Feather name="moon" size={18} color={theme.icon} />}
+            title="Dark Mode"
+            titleStyle={{ color: theme.text }}
+            rightElement={
+              <Switch
+                value={isDarkMode}
+                disabled
+                trackColor={{ false: theme.switchTrackOff, true: theme.switchTrackOn }}
+                thumbColor={theme.switchThumb}
+              />
+            }
+          />
+          <View style={[styles.separator, { backgroundColor: theme.separator }]} />
+          <SettingRow
+            icon={<Ionicons name="color-palette-outline" size={18} color={theme.icon} />}
+            title="Syntax Highlighting"
+            titleStyle={{ color: theme.text }}
+            rightElement={
+              <TouchableOpacity style={styles.valueSelector}>
+                <Text style={[styles.selectorText, { color: theme.subText }]}>One Dark</Text>
+                <Feather name="chevron-right" size={16} color={theme.subText} />
+              </TouchableOpacity>
+            }
+          />
+        </View>
 
-                {/* ACCOUNT SECTION */}
-                <SectionHeader title="ACCOUNT" />
-                <TouchableOpacity style={styles.accountCard} activeOpacity={0.7}>
-                    <View style={styles.accountInfo}>
-                        <View style={styles.avatarContainer}>
-                            <Image
-                                source={{ uri: 'https://i.pravatar.cc/150?img=68' }}
-                                style={styles.accountAvatar}
-                            />
-                            <View style={styles.activeStatusDot} />
-                        </View>
-                        <View style={styles.accountTextContainer}>
-                            <Text style={styles.accountName}>Tejas Derle</Text>
-                            <Text style={styles.accountEmail}>tejasderle.dev@snippets.ai</Text>
-                        </View>
-                    </View>
-                    <Feather name="chevron-right" size={20} color="#8F8F94" />
-                </TouchableOpacity>
+        <SectionHeader title="STORAGE" textStyle={{ color: theme.mutedText }} />
+        <View style={[styles.storageCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <View style={styles.storageHeaderRow}>
+            <Text style={[styles.storageTitle, { color: theme.text }]}>42.5 MB of 1 GB used</Text>
+            <Text style={[styles.storagePercentage, { color: theme.primary }]}>4.2%</Text>
+          </View>
+          <Text style={[styles.storageSubtitle, { color: theme.subText }]}>1,248 Snippets stored locally</Text>
 
-                {/* APPEARANCE SECTION */}
-                <SectionHeader title="APPEARANCE" />
-                <View style={styles.groupedRowsContainer}>
-                    <SettingRow
-                        icon={<Feather name="moon" size={18} color="#A3A3A3" />}
-                        title="Dark Mode"
-                        rightElement={
-                            <Switch
-                                value={isDarkMode}
-                                onValueChange={setIsDarkMode}
-                                trackColor={{ false: '#3A3A3C', true: '#5E5CE6' }}
-                                thumbColor="#FFFFFF"
-                            />
-                        }
-                    />
-                    <View style={styles.separator} />
-                    <SettingRow
-                        icon={<Ionicons name="color-palette-outline" size={18} color="#A3A3A3" />}
-                        title="Syntax Highlighting"
-                        rightElement={
-                            <TouchableOpacity style={styles.valueSelector}>
-                                <Text style={styles.selectorText}>One Dark</Text>
-                                <Feather name="chevron-right" size={16} color="#8F8F94" />
-                            </TouchableOpacity>
-                        }
-                    />
-                </View>
+          <StorageProgressBar progress={0.042} />
 
-                {/* STORAGE SECTION */}
-                <SectionHeader title="STORAGE" />
-                <View style={styles.storageCard}>
-                    <View style={styles.storageHeaderRow}>
-                        <Text style={styles.storageTitle}>42.5 MB of 1 GB used</Text>
-                        <Text style={styles.storagePercentage}>4.2%</Text>
-                    </View>
-                    <Text style={styles.storageSubtitle}>1,248 Snippets stored locally</Text>
+          <View style={styles.legendContainer}>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: theme.primary }]} />
+              <Text style={[styles.legendText, { color: theme.subText }]}>Code</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: theme.subText }]} />
+              <Text style={[styles.legendText, { color: theme.subText }]}>Metadata</Text>
+            </View>
+          </View>
+        </View>
 
-                    <StorageProgressBar progress={0.042} />
+        <SectionHeader title="DATA & BACKUP" textStyle={{ color: theme.mutedText }} />
+        <View style={[styles.groupedRowsContainer, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <SettingRow
+            icon={<Ionicons name="document-text-outline" size={18} color={theme.icon} />}
+            title="Export All Snippets"
+            titleStyle={{ color: theme.text }}
+            rightElement={<Feather name="download" size={18} color={theme.icon} />}
+          />
+          <View style={[styles.separator, { backgroundColor: theme.separator }]} />
+          <SettingRow
+            icon={<Ionicons name="cloud-upload-outline" size={18} color={theme.icon} />}
+            title="Backup to Cloud"
+            titleStyle={{ color: theme.text }}
+            rightElement={<Ionicons name="refresh" size={18} color={theme.icon} />}
+          />
+          <View style={[styles.separator, { backgroundColor: theme.separator }]} />
+          <SettingRow
+            icon={<Ionicons name="trash-outline" size={18} color={theme.danger} />}
+            title="Clear Local Storage"
+            titleStyle={{ color: theme.danger }}
+          />
+        </View>
 
-                    <View style={styles.legendContainer}>
-                        <View style={styles.legendItem}>
-                            <View style={[styles.legendDot, { backgroundColor: '#5E5CE6' }]} />
-                            <Text style={styles.legendText}>Code</Text>
-                        </View>
-                        <View style={styles.legendItem}>
-                            <View style={[styles.legendDot, { backgroundColor: '#8E8E93' }]} />
-                            <Text style={styles.legendText}>Metadata</Text>
-                        </View>
-                    </View>
-                </View>
+        <SectionHeader title="ABOUT" textStyle={{ color: theme.mutedText }} />
+        <View style={[styles.groupedRowsContainer, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <SettingRow
+            title="Version"
+            titleStyle={{ color: theme.text }}
+            rightElement={<Text style={[styles.versionText, { color: theme.subText }]}>2.4.0-stable</Text>}
+          />
+          <View style={[styles.separator, { backgroundColor: theme.separator }]} />
+          <SettingRow
+            title="Terms of Service"
+            titleStyle={{ color: theme.text }}
+            rightElement={<Feather name="external-link" size={16} color={theme.subText} />}
+          />
+          <View style={[styles.separator, { backgroundColor: theme.separator }]} />
+          <SettingRow
+            title="Privacy Policy"
+            titleStyle={{ color: theme.text }}
+            rightElement={<Feather name="external-link" size={16} color={theme.subText} />}
+          />
+        </View>
 
-                {/* DATA & BACKUP SECTION */}
-                <SectionHeader title="DATA & BACKUP" />
-                <View style={styles.groupedRowsContainer}>
-                    <SettingRow
-                        icon={<Ionicons name="document-text-outline" size={18} color="#A3A3A3" />}
-                        title="Export All Snippets"
-                        rightElement={<Feather name="download" size={18} color="#A3A3A3" />}
-                    />
-                    <View style={styles.separator} />
-                    <SettingRow
-                        icon={<Ionicons name="cloud-upload-outline" size={18} color="#A3A3A3" />}
-                        title="Backup to Cloud"
-                        rightElement={<Ionicons name="refresh" size={18} color="#A3A3A3" />}
-                    />
-                    <View style={styles.separator} />
-                    <SettingRow
-                        icon={<Ionicons name="trash-outline" size={18} color="#FF453A" />}
-                        title="Clear Local Storage"
-                        titleStyle={{ color: '#FF453A' }}
-                    />
-                </View>
-
-                {/* ABOUT SECTION */}
-                <SectionHeader title="ABOUT" />
-                <View style={styles.groupedRowsContainer}>
-                    <SettingRow
-                        title="Version"
-                        rightElement={<Text style={styles.versionText}>2.4.0-stable</Text>}
-                    />
-                    <View style={styles.separator} />
-                    <SettingRow
-                        title="Terms of Service"
-                        rightElement={<Feather name="external-link" size={16} color="#8F8F94" />}
-                    />
-                    <View style={styles.separator} />
-                    <SettingRow
-                        title="Privacy Policy"
-                        rightElement={<Feather name="external-link" size={16} color="#8F8F94" />}
-                    />
-                </View>
-
-                {/* Footer */}
-                <View style={styles.footerContainer}>
-                    <Text style={styles.footerText}>Made with 🤍 for developers</Text>
-                    <View style={styles.footerIcons}>
-                        <Ionicons name="laptop-outline" size={18} color="#636366" style={{ marginRight: 12 }} />
-                        <Ionicons name="git-branch-outline" size={18} color="#636366" style={{ marginRight: 12 }} />
-                        <Ionicons name="code-outline" size={18} color="#636366" />
-                    </View>
-                </View>
-
-            </ScrollView>
-        </SafeAreaView>
-    );
+        <View style={styles.footerContainer}>
+          <Text style={[styles.footerText, { color: theme.mutedText }]}>Made with care for developers</Text>
+          <View style={styles.footerIcons}>
+            <Ionicons name="laptop-outline" size={18} color={theme.mutedText} style={{ marginRight: 12 }} />
+            <Ionicons name="git-branch-outline" size={18} color={theme.mutedText} style={{ marginRight: 12 }} />
+            <Ionicons name="code-outline" size={18} color={theme.mutedText} />
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
 };
 
 export default SettingsScreen;
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#0A0A0C', // Deep premium dark background
-    },
-    scrollContent: {
-        paddingHorizontal: 16,
-        paddingBottom: 40,
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 14,
-        borderBottomWidth: 1,
-        borderBottomColor: '#1C1C1E',
-    },
-    headerTitleContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    headerIcon: {
-        marginRight: 8,
-    },
-    headerText: {
-        color: '#FFFFFF',
-        fontSize: 18,
-        fontWeight: '700',
-        letterSpacing: 0.5,
-    },
-    topAvatar: {
-        width: 32,
-        height: 32,
-        borderRadius: 16,
-        borderWidth: 1,
-        borderColor: '#3A3A3C',
-    },
-    accountCard: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        backgroundColor: '#121214',
-        padding: 16,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#1C1C1E',
-    },
-    accountInfo: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    avatarContainer: {
-        position: 'relative',
-    },
-    accountAvatar: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
-    },
-    activeStatusDot: {
-        position: 'absolute',
-        bottom: 0,
-        right: 2,
-        width: 12,
-        height: 12,
-        borderRadius: 6,
-        backgroundColor: '#30D158',
-        borderWidth: 2,
-        borderColor: '#121214',
-    },
-    accountTextContainer: {
-        marginLeft: 14,
-    },
-    accountName: {
-        color: '#FFFFFF',
-        fontSize: 16,
-        fontWeight: '600',
-    },
-    accountEmail: {
-        color: '#8E8E93',
-        fontSize: 13,
-        marginTop: 2,
-    },
-    groupedRowsContainer: {
-        backgroundColor: '#121214',
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#1C1C1E',
-        overflow: 'hidden',
-    },
-    separator: {
-        height: 1,
-        backgroundColor: '#1C1C1E',
-        marginLeft: 16,
-    },
-    valueSelector: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    selectorText: {
-        color: '#8E8E93',
-        marginRight: 6,
-        fontSize: 14,
-    },
-    storageCard: {
-        backgroundColor: '#121214',
-        padding: 16,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#1C1C1E',
-    },
-    storageHeaderRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-    },
-    storageTitle: {
-        color: '#FFFFFF',
-        fontSize: 14,
-        fontWeight: '600',
-    },
-    storagePercentage: {
-        color: '#5E5CE6',
-        fontSize: 12,
-        fontWeight: '600',
-    },
-    storageSubtitle: {
-        color: '#8E8E93',
-        fontSize: 13,
-        marginTop: 4,
-        marginBottom: 14,
-    },
-    legendContainer: {
-        flexDirection: 'row',
-        marginTop: 12,
-    },
-    legendItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginRight: 16,
-    },
-    legendDot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        marginRight: 6,
-    },
-    legendText: {
-        color: '#8E8E93',
-        fontSize: 12,
-    },
-    versionText: {
-        color: '#8E8E93',
-        fontSize: 14,
-    },
-    footerContainer: {
-        alignItems: 'center',
-        marginTop: 32,
-        marginBottom: 16,
-    },
-    footerText: {
-        color: '#636366',
-        fontSize: 13,
-        marginBottom: 8,
-    },
-    footerIcons: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
+  container: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 40,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+  },
+  headerTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerIcon: {
+    marginRight: 8,
+  },
+  headerText: {
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  topAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  accountCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  accountInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  avatarContainer: {
+    position: 'relative',
+  },
+  accountAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+  },
+  activeStatusDot: {
+    position: 'absolute',
+    bottom: 0,
+    right: 2,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    borderWidth: 2,
+  },
+  accountTextContainer: {
+    marginLeft: 14,
+  },
+  accountName: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  accountEmail: {
+    fontSize: 13,
+    marginTop: 2,
+  },
+  groupedRowsContainer: {
+    borderRadius: 12,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  separator: {
+    height: 1,
+    marginLeft: 16,
+  },
+  valueSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  selectorText: {
+    marginRight: 6,
+    fontSize: 14,
+  },
+  storageCard: {
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  storageHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  storageTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  storagePercentage: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  storageSubtitle: {
+    fontSize: 13,
+    marginTop: 4,
+    marginBottom: 14,
+  },
+  legendContainer: {
+    flexDirection: 'row',
+    marginTop: 12,
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  legendDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 6,
+  },
+  legendText: {
+    fontSize: 12,
+  },
+  versionText: {
+    fontSize: 14,
+  },
+  footerContainer: {
+    alignItems: 'center',
+    marginTop: 32,
+    marginBottom: 16,
+  },
+  footerText: {
+    fontSize: 13,
+    marginBottom: 8,
+  },
+  footerIcons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
 });
