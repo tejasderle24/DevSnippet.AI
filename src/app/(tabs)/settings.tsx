@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import {
@@ -9,19 +9,16 @@ import {
   Image,
   TouchableOpacity,
   Switch,
-  useColorScheme,
 } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import SectionHeader from '@/components/SectionHeader';
 import SettingRow from '@/components/SettingRow';
 import StorageProgressBar from '@/components/StorageProgressBar';
-import { darkTheme, lightTheme } from '@/constants/theme';
 import Header from '@/components/common/Header';
+import { useTheme } from '@/context/ThemeContext';
 
 const SettingsScreen = () => {
-  const systemScheme = useColorScheme() ?? 'dark';
-  const [isDarkMode, setIsDarkMode] = useState(systemScheme === 'dark');
-  const theme = isDarkMode ? darkTheme : lightTheme;
+  const { theme, isDarkMode, toggleTheme } = useTheme();
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -38,7 +35,7 @@ const SettingsScreen = () => {
         >
           <View style={styles.accountInfo}>
             <View style={styles.avatarContainer}>
-              <Image source={{ uri: 'https://i.pravatar.cc/150?img=68' }} style={styles.accountAvatar} />
+              <Image source={{ uri: 'https://avatars.githubusercontent.com/u/180934001' }} style={styles.accountAvatar} />
               <View style={[styles.activeStatusDot, { backgroundColor: theme.success, borderColor: theme.card }]} />
             </View>
             <View style={styles.accountTextContainer}>
@@ -58,7 +55,7 @@ const SettingsScreen = () => {
             rightElement={
               <Switch
                 value={isDarkMode}
-                onValueChange={setIsDarkMode}
+                onValueChange={toggleTheme}
                 trackColor={{
                   false: theme.switchTrackOff,
                   true: theme.switchTrackOn,

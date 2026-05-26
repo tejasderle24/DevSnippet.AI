@@ -1,14 +1,12 @@
 import { StatusBar } from "expo-status-bar";
-import { Text, View, StyleSheet, useColorScheme } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { darkTheme, lightTheme } from "@/constants/theme";
 import Header from "@/components/common/Header";
+import { useTheme } from "@/context/ThemeContext";
 
 
 export default function FavoritesScreen() {
-    const colorScheme = useColorScheme() ?? 'dark';
-    const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
-    const isDarkMode = colorScheme === 'dark';
+const { theme, isDarkMode } = useTheme();
   
   return (
        <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>

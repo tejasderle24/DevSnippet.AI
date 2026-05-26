@@ -1,13 +1,12 @@
-import { Text, View, StyleSheet, Image, useColorScheme } from "react-native";
+import { Text, View, StyleSheet, Image } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
-import { darkTheme, lightTheme } from "@/constants/theme";
+import { useTheme } from "@/context/ThemeContext";
 
 
 
 const Header = () => {
 
-    const colorScheme = useColorScheme() ?? 'dark';
-    const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
+    const { theme } = useTheme();
 
     return (
         <View style={[styles.header, { borderBottomColor: theme.border }]}>
@@ -16,7 +15,7 @@ const Header = () => {
                 <Text style={[styles.headerText, { color: theme.text }]}>DevSnippets AI</Text>
             </View>
             <Image
-                source={{ uri: 'https://i.pravatar.cc/150?img=68' }}
+                source={{ uri: 'https://avatars.githubusercontent.com/u/180934001?v=4' }}
                 style={[styles.topAvatar, { borderColor: theme.switchTrackOff }]}
             />
         </View>
