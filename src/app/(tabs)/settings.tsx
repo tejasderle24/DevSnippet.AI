@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import {
@@ -16,26 +16,19 @@ import SectionHeader from '@/components/SectionHeader';
 import SettingRow from '@/components/SettingRow';
 import StorageProgressBar from '@/components/StorageProgressBar';
 import { darkTheme, lightTheme } from '@/constants/theme';
+import Header from '@/components/common/Header';
 
 const SettingsScreen = () => {
-  const colorScheme = useColorScheme() ?? 'dark';
-  const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
-  const isDarkMode = colorScheme === 'dark';
+  const systemScheme = useColorScheme() ?? 'dark';
+  const [isDarkMode, setIsDarkMode] = useState(systemScheme === 'dark');
+  const theme = isDarkMode ? darkTheme : lightTheme;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <StatusBar style={isDarkMode ? 'light' : 'dark'} />
 
-      <View style={[styles.header, { borderBottomColor: theme.border }]}>
-        <View style={styles.headerTitleContainer}>
-          <Ionicons name="code-slash" size={22} color={theme.primary} style={styles.headerIcon} />
-          <Text style={[styles.headerText, { color: theme.text }]}>DevSnippets AI</Text>
-        </View>
-        <Image
-          source={{ uri: 'https://i.pravatar.cc/150?img=68' }}
-          style={[styles.topAvatar, { borderColor: theme.switchTrackOff }]}
-        />
-      </View>
+      {/* TopHeader */}
+      <Header />
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <SectionHeader title="ACCOUNT" textStyle={{ color: theme.mutedText }} />
@@ -65,24 +58,16 @@ const SettingsScreen = () => {
             rightElement={
               <Switch
                 value={isDarkMode}
-                disabled
-                trackColor={{ false: theme.switchTrackOff, true: theme.switchTrackOn }}
+                onValueChange={setIsDarkMode}
+                trackColor={{
+                  false: theme.switchTrackOff,
+                  true: theme.switchTrackOn,
+                }}
                 thumbColor={theme.switchThumb}
               />
             }
           />
           <View style={[styles.separator, { backgroundColor: theme.separator }]} />
-          <SettingRow
-            icon={<Ionicons name="color-palette-outline" size={18} color={theme.icon} />}
-            title="Syntax Highlighting"
-            titleStyle={{ color: theme.text }}
-            rightElement={
-              <TouchableOpacity style={styles.valueSelector}>
-                <Text style={[styles.selectorText, { color: theme.subText }]}>One Dark</Text>
-                <Feather name="chevron-right" size={16} color={theme.subText} />
-              </TouchableOpacity>
-            }
-          />
         </View>
 
         <SectionHeader title="STORAGE" textStyle={{ color: theme.mutedText }} />
@@ -116,12 +101,6 @@ const SettingsScreen = () => {
             rightElement={<Feather name="download" size={18} color={theme.icon} />}
           />
           <View style={[styles.separator, { backgroundColor: theme.separator }]} />
-          <SettingRow
-            icon={<Ionicons name="cloud-upload-outline" size={18} color={theme.icon} />}
-            title="Backup to Cloud"
-            titleStyle={{ color: theme.text }}
-            rightElement={<Ionicons name="refresh" size={18} color={theme.icon} />}
-          />
           <View style={[styles.separator, { backgroundColor: theme.separator }]} />
           <SettingRow
             icon={<Ionicons name="trash-outline" size={18} color={theme.danger} />}
@@ -135,7 +114,7 @@ const SettingsScreen = () => {
           <SettingRow
             title="Version"
             titleStyle={{ color: theme.text }}
-            rightElement={<Text style={[styles.versionText, { color: theme.subText }]}>2.4.0-stable</Text>}
+            rightElement={<Text style={[styles.versionText, { color: theme.subText }]}>1.0.0-stable</Text>}
           />
           <View style={[styles.separator, { backgroundColor: theme.separator }]} />
           <SettingRow
@@ -152,7 +131,7 @@ const SettingsScreen = () => {
         </View>
 
         <View style={styles.footerContainer}>
-          <Text style={[styles.footerText, { color: theme.mutedText }]}>Made with care for developers</Text>
+          <Text style={[styles.footerText, { color: theme.mutedText }]}>Made by Tejas Derle</Text>
           <View style={styles.footerIcons}>
             <Ionicons name="laptop-outline" size={18} color={theme.mutedText} style={{ marginRight: 12 }} />
             <Ionicons name="git-branch-outline" size={18} color={theme.mutedText} style={{ marginRight: 12 }} />
@@ -173,32 +152,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 16,
     paddingBottom: 40,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-  },
-  headerTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerIcon: {
-    marginRight: 8,
-  },
-  headerText: {
-    fontSize: 18,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-  },
-  topAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 1,
   },
   accountCard: {
     flexDirection: 'row',

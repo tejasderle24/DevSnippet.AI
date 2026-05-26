@@ -1,17 +1,26 @@
-import { Text, View, StyleSheet } from "react-native";
+import { StatusBar } from "expo-status-bar";
+import { Text, View, StyleSheet, useColorScheme } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { darkTheme, lightTheme } from "@/constants/theme";
+import Header from "@/components/common/Header";
 
-export default function Index() {
+
+export default function HomeScreen() {
+    const colorScheme = useColorScheme() ?? 'dark';
+    const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
+    const isDarkMode = colorScheme === 'dark';
+  
   return (
-    <View style={styles.container}>
-      <Text>DevSnippet AI - Mobile Application using React Native with Expo</Text>
-    </View>
+       <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+         <StatusBar style={isDarkMode ? 'light' : 'dark'} />
+         {/* TopHeader */}
+         <Header />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
   },
 });
