@@ -1,9 +1,9 @@
-import React, { useState } from "react";
-import { StyleSheet, View, Text, ScrollView, TextInput, TouchableOpacity } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import SnippetCard from "@/components/common/SnippetCard";
 import { useTheme } from "@/context/ThemeContext";
-import SnippetCard from "@/components/home/SnippetCard";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 // Expanded dummy dataset representing "All Snippets"
 const ALL_SNIPPETS = [

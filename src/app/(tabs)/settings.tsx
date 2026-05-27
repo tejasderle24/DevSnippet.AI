@@ -11,9 +11,9 @@ import {
   Switch,
 } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
-import SectionHeader from '@/components/SectionHeader';
-import SettingRow from '@/components/SettingRow';
-import StorageProgressBar from '@/components/StorageProgressBar';
+import SectionHeader from '@/components/settings/SectionHeader';
+import SettingRow from '@/components/settings/SettingRow';
+import StorageProgressBar from '@/components/settings/StorageProgressBar';
 import Header from '@/components/common/Header';
 import { useTheme } from '@/context/ThemeContext';
 

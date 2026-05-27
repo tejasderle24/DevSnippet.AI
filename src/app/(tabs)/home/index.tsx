@@ -1,14 +1,14 @@
-import { StatusBar } from "expo-status-bar";
-import { Text, View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "@/components/common/Header";
 import { useTheme } from "@/context/ThemeContext";
 import { useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 // Import our new components
-import LanguageFilters from "@/components/home/LanguageFilters";
-import SnippetCard from "@/components/home/SnippetCard";
+import SnippetCard from "@/components/common/SnippetCard";
 import FavoriteCard from "@/components/home/FavoriteCard";
+import LanguageFilters from "@/components/home/LanguageFilters";
 
 export default function HomeScreen() {
   const { theme, isDarkMode } = useTheme();
