@@ -1,12 +1,30 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
 import { useTheme } from "@/context/ThemeContext";
 
-const LANGUAGES = ["ALL LANGUAGES", "REACT", "PYTHON", "TAILWIND"];
+type Props = {
+  selectedLanguage?: string;
+  languages?: string[];
+  onSelectLanguage?: (language: string) => void;
+};
 
-export default function LanguageFilters() {
-  const { theme } = useTheme();
-  const [selected, setSelected] = useState("ALL LANGUAGES");
+export default function LanguageFilters({
+  selectedLanguage,
+  languages,
+  onSelectLanguage,
+}: Props) {
+  useTheme();
+  const [internalSelected, setInternalSelected] = useState("ALL LANGUAGES");
+  const selected = selectedLanguage ?? internalSelected;
+  const options = useMemo(
+    () => languages ?? ["ALL LANGUAGES", "TypeScript", "JavaScript", "Python", "Go", "React", "Node"],
+    [languages]
+  );
+
+  const handleSelect = (lang: string) => {
+    setInternalSelected(lang);
+    onSelectLanguage?.(lang);
+  };
 
   return (
     <ScrollView 
@@ -14,12 +32,12 @@ export default function LanguageFilters() {
       showsHorizontalScrollIndicator={false} 
       contentContainerStyle={styles.container}
     >
-      {LANGUAGES.map((lang) => {
+      {options.map((lang) => {
         const isSelected = selected === lang;
         return (
           <TouchableOpacity
             key={lang}
-            onPress={() => setSelected(lang)}
+            onPress={() => handleSelect(lang)}
             style={[
               styles.pill,
               { 

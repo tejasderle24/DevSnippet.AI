@@ -1,267 +1,74 @@
-import React from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { StatusBar } from 'expo-status-bar';
-import {
-  StyleSheet,
-  Text,
-  View,
-  ScrollView,
-  Image,
-  TouchableOpacity,
-  Switch,
-} from 'react-native';
-import { Ionicons, Feather } from '@expo/vector-icons';
-import SectionHeader from '@/components/SectionHeader';
-import SettingRow from '@/components/SettingRow';
-import StorageProgressBar from '@/components/StorageProgressBar';
-import Header from '@/components/common/Header';
-import { useTheme } from '@/context/ThemeContext';
+import React, { useState } from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
+import { StyleSheet, Text, View, ScrollView, TextInput, Switch, TouchableOpacity, Alert } from "react-native";
+import Header from "@/components/common/Header";
+import { useTheme } from "@/context/ThemeContext";
+import { useAppData } from "@/context/AppDataContext";
+import { clearStorage } from "@/services/storageService";
+import { deleteApiKey, getApiKey, saveApiKey } from "@/services/secureStoreService";
 
-const SettingsScreen = () => {
-  const { theme, isDarkMode, toggleTheme } = useTheme();
+export default function SettingsScreen() {
+  const { theme, isDarkMode } = useTheme();
+  const { settings, updateSettings, snippets, files, refresh } = useAppData();
+  const [apiKeyInput, setApiKeyInput] = useState("");
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <StatusBar style={isDarkMode ? 'light' : 'dark'} />
-
-      {/* TopHeader */}
+      <StatusBar style={isDarkMode ? "light" : "dark"} />
       <Header />
-
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        <SectionHeader title="ACCOUNT" textStyle={{ color: theme.mutedText }} />
-        <TouchableOpacity
-          style={[styles.accountCard, { backgroundColor: theme.card, borderColor: theme.border }]}
-          activeOpacity={0.7}
-        >
-          <View style={styles.accountInfo}>
-            <View style={styles.avatarContainer}>
-              <Image source={{ uri: 'https://avatars.githubusercontent.com/u/180934001' }} style={styles.accountAvatar} />
-              <View style={[styles.activeStatusDot, { backgroundColor: theme.success, borderColor: theme.card }]} />
-            </View>
-            <View style={styles.accountTextContainer}>
-              <Text style={[styles.accountName, { color: theme.text }]}>Tejas Derle</Text>
-              <Text style={[styles.accountEmail, { color: theme.subText }]}>tejasderle.dev@snippets.ai</Text>
-            </View>
-          </View>
-          <Feather name="chevron-right" size={20} color={theme.subText} />
-        </TouchableOpacity>
-
-        <SectionHeader title="APPEARANCE" textStyle={{ color: theme.mutedText }} />
-        <View style={[styles.groupedRowsContainer, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <SettingRow
-            icon={<Feather name="moon" size={18} color={theme.icon} />}
-            title="Dark Mode"
-            titleStyle={{ color: theme.text }}
-            rightElement={
-              <Switch
-                value={isDarkMode}
-                onValueChange={toggleTheme}
-                trackColor={{
-                  false: theme.switchTrackOff,
-                  true: theme.switchTrackOn,
-                }}
-                thumbColor={theme.switchThumb}
-              />
-            }
-          />
-          <View style={[styles.separator, { backgroundColor: theme.separator }]} />
-        </View>
-
-        <SectionHeader title="STORAGE" textStyle={{ color: theme.mutedText }} />
-        <View style={[styles.storageCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <View style={styles.storageHeaderRow}>
-            <Text style={[styles.storageTitle, { color: theme.text }]}>42.5 MB of 1 GB used</Text>
-            <Text style={[styles.storagePercentage, { color: theme.primary }]}>4.2%</Text>
-          </View>
-          <Text style={[styles.storageSubtitle, { color: theme.subText }]}>1,248 Snippets stored locally</Text>
-
-          <StorageProgressBar progress={0.042} />
-
-          <View style={styles.legendContainer}>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: theme.primary }]} />
-              <Text style={[styles.legendText, { color: theme.subText }]}>Code</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: theme.subText }]} />
-              <Text style={[styles.legendText, { color: theme.subText }]}>Metadata</Text>
-            </View>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.card}>
+          <Text style={styles.label}>Preferred Language</Text>
+          <TextInput style={styles.input} value={settings.preferredLanguage} onChangeText={(value) => updateSettings({ preferredLanguage: value })} />
+          <Text style={styles.label}>Font Size</Text>
+          <TextInput style={styles.input} keyboardType="numeric" value={String(settings.fontSize)} onChangeText={(v) => updateSettings({ fontSize: Number(v) || 14 })} />
+          <View style={styles.row}>
+            <Text style={styles.label}>Auto Backup</Text>
+            <Switch value={settings.autoBackup} onValueChange={(value) => updateSettings({ autoBackup: value })} />
           </View>
         </View>
 
-        <SectionHeader title="DATA & BACKUP" textStyle={{ color: theme.mutedText }} />
-        <View style={[styles.groupedRowsContainer, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <SettingRow
-            icon={<Ionicons name="document-text-outline" size={18} color={theme.icon} />}
-            title="Export All Snippets"
-            titleStyle={{ color: theme.text }}
-            rightElement={<Feather name="download" size={18} color={theme.icon} />}
-          />
-          <View style={[styles.separator, { backgroundColor: theme.separator }]} />
-          <View style={[styles.separator, { backgroundColor: theme.separator }]} />
-          <SettingRow
-            icon={<Ionicons name="trash-outline" size={18} color={theme.danger} />}
-            title="Clear Local Storage"
-            titleStyle={{ color: theme.danger }}
-          />
-        </View>
-
-        <SectionHeader title="ABOUT" textStyle={{ color: theme.mutedText }} />
-        <View style={[styles.groupedRowsContainer, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <SettingRow
-            title="Version"
-            titleStyle={{ color: theme.text }}
-            rightElement={<Text style={[styles.versionText, { color: theme.subText }]}>1.0.0-stable</Text>}
-          />
-          <View style={[styles.separator, { backgroundColor: theme.separator }]} />
-          <SettingRow
-            title="Terms of Service"
-            titleStyle={{ color: theme.text }}
-            rightElement={<Feather name="external-link" size={16} color={theme.subText} />}
-          />
-          <View style={[styles.separator, { backgroundColor: theme.separator }]} />
-          <SettingRow
-            title="Privacy Policy"
-            titleStyle={{ color: theme.text }}
-            rightElement={<Feather name="external-link" size={16} color={theme.subText} />}
-          />
-        </View>
-
-        <View style={styles.footerContainer}>
-          <Text style={[styles.footerText, { color: theme.mutedText }]}>Made by Tejas Derle</Text>
-          <View style={styles.footerIcons}>
-            <Ionicons name="laptop-outline" size={18} color={theme.mutedText} style={{ marginRight: 12 }} />
-            <Ionicons name="git-branch-outline" size={18} color={theme.mutedText} style={{ marginRight: 12 }} />
-            <Ionicons name="code-outline" size={18} color={theme.mutedText} />
+        <View style={styles.card}>
+          <Text style={styles.label}>AI API Key (SecureStore)</Text>
+          <TextInput style={styles.input} placeholder="Paste API key" placeholderTextColor="#777" value={apiKeyInput} onChangeText={setApiKeyInput} />
+          <View style={styles.row}>
+            <TouchableOpacity style={styles.btn} onPress={() => saveApiKey(apiKeyInput)}><Text style={styles.btnText}>Save Key</Text></TouchableOpacity>
+            <TouchableOpacity
+              style={styles.btn}
+              onPress={async () => {
+                const key = await getApiKey();
+                Alert.alert("Stored key", key ? `Saved (${key.slice(0, 6)}...)` : "No key stored");
+              }}
+            >
+              <Text style={styles.btnText}>Check</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.btn} onPress={() => deleteApiKey()}><Text style={styles.btnText}>Delete</Text></TouchableOpacity>
           </View>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.stats}>Snippets: {snippets.length}</Text>
+          <Text style={styles.stats}>Exported Files: {files.length}</Text>
+          <TouchableOpacity style={styles.dangerBtn} onPress={async () => { await clearStorage(); await refresh(); }}>
+            <Text style={styles.dangerText}>Clear AsyncStorage</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaView>
   );
-};
-
-export default SettingsScreen;
+}
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 40,
-  },
-  accountCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  accountInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatarContainer: {
-    position: 'relative',
-  },
-  accountAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-  },
-  activeStatusDot: {
-    position: 'absolute',
-    bottom: 0,
-    right: 2,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    borderWidth: 2,
-  },
-  accountTextContainer: {
-    marginLeft: 14,
-  },
-  accountName: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  accountEmail: {
-    fontSize: 13,
-    marginTop: 2,
-  },
-  groupedRowsContainer: {
-    borderRadius: 12,
-    borderWidth: 1,
-    overflow: 'hidden',
-  },
-  separator: {
-    height: 1,
-    marginLeft: 16,
-  },
-  valueSelector: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  selectorText: {
-    marginRight: 6,
-    fontSize: 14,
-  },
-  storageCard: {
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  storageHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  storageTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  storagePercentage: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  storageSubtitle: {
-    fontSize: 13,
-    marginTop: 4,
-    marginBottom: 14,
-  },
-  legendContainer: {
-    flexDirection: 'row',
-    marginTop: 12,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  legendDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
-  },
-  legendText: {
-    fontSize: 12,
-  },
-  versionText: {
-    fontSize: 14,
-  },
-  footerContainer: {
-    alignItems: 'center',
-    marginTop: 32,
-    marginBottom: 16,
-  },
-  footerText: {
-    fontSize: 13,
-    marginBottom: 8,
-  },
-  footerIcons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
+  container: { flex: 1 },
+  scrollContent: { padding: 16, gap: 12 },
+  card: { backgroundColor: "#121214", borderWidth: 1, borderColor: "#1e1e24", borderRadius: 12, padding: 12, gap: 10 },
+  label: { color: "#ddd", fontSize: 13 },
+  input: { backgroundColor: "#0f0f11", borderWidth: 1, borderColor: "#232329", borderRadius: 8, color: "#fff", padding: 10 },
+  row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
+  btn: { backgroundColor: "#1b2434", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8 },
+  btnText: { color: "#93b4ff", fontWeight: "600" },
+  stats: { color: "#ddd" },
+  dangerBtn: { backgroundColor: "#331313", borderRadius: 8, padding: 10, marginTop: 8, alignItems: "center" },
+  dangerText: { color: "#f87171", fontWeight: "700" },
 });
