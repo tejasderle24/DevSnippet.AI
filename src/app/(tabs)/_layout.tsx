@@ -29,7 +29,7 @@ const { theme } = useTheme();
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
           title: 'Home',
           tabBarIcon: ({ focused }) => (
@@ -42,7 +42,7 @@ const { theme } = useTheme();
         }}
       />
 
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="search"
         options={{
           title: 'Search',
@@ -54,7 +54,7 @@ const { theme } = useTheme();
             />
           ),
         }}
-      />
+      /> */}
 
       <Tabs.Screen
         name="favorites"
