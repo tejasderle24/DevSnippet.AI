@@ -19,7 +19,7 @@ export default function RootLayout() {
     <ThemeProvider>
       <Stack>
         <Stack.Screen
-          name="(splash)"
+          name="(splash)/index"
           options={{ headerShown: false }}
         />
         <Stack.Screen
