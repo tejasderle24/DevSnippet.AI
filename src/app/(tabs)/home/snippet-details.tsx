@@ -1,121 +1,114 @@
+import { useTheme } from "@/context/ThemeContext";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter, useLocalSearchParams, Stack } from "expo-router";
-import { Feather, MaterialCommunityIcons, FontAwesome5 } from "@expo/vector-icons";
 
 export default function SnippetDetailsScreen() {
+  const { theme, isDarkMode } = useTheme();
   const router = useRouter();
   const params = useLocalSearchParams();
 
-  // Parse parameters passed down or load crisp placeholder fallbacks
   const title = (params.title as string) || "FetchUserPayload.ts";
   const tags: string[] = params.tags ? JSON.parse(params.tags as string) : ["TYPESCRIPT", "REACT CONTEXT"];
-  const code = (params.code as string) || `import { UserType } from '@/types';\n\nexport const fetchUserData = async (userId) => {\n  const response = await fetch(\`/api/users/\${userId}\`);\n  return response.json();\n};`;
+  const code =
+    (params.code as string) ||
+    "import { UserType } from '@/types';\n\nexport const fetchUserData = async (userId) => {\n  const response = await fetch(`/api/users/${userId}`);\n  return response.json();\n};";
   const timeAgo = (params.timeAgo as string) || "2 hours ago";
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={["top"]}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      {/* TOP HEADER BAR */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: theme.border }]}>
         <TouchableOpacity style={styles.iconButton} onPress={() => router.back()}>
-          <Feather name="arrow-left" size={22} color="#ffffff" />
+          <Feather name="arrow-left" size={22} color={theme.text} />
         </TouchableOpacity>
-        <Text style={styles.headerAppTitle}>DevSnippets AI</Text>
+        <Text style={[styles.headerAppTitle, { color: theme.text }]}>DevSnippets AI</Text>
         <TouchableOpacity style={styles.iconButton}>
-          <Feather name="edit-3" size={20} color="#ffffff" />
+          <Feather name="edit-3" size={20} color={theme.text} />
         </TouchableOpacity>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        
-        {/* TITLES & METADATA TAGS */}
         <View style={styles.metaContainer}>
-          <Text style={styles.snippetTitle}>{title}</Text>
+          <Text style={[styles.snippetTitle, { color: theme.text }]}>{title}</Text>
           <View style={styles.tagRow}>
             {tags.map((tag, idx) => (
-              <View key={idx} style={styles.tagBadge}>
-                <Text style={styles.tagText}>{tag.toUpperCase()}</Text>
+              <View key={idx} style={[styles.tagBadge, { backgroundColor: theme.cardAlt, borderColor: theme.border }]}>
+                <Text style={[styles.tagText, { color: theme.success }]}>{tag.toUpperCase()}</Text>
               </View>
             ))}
           </View>
         </View>
 
-        {/* TERMINAL BACKDROP CODE WINDOW */}
-        <View style={styles.editorWindow}>
-          <View style={styles.editorHeader}>
+        <View style={[styles.editorWindow, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <View style={[styles.editorHeader, { backgroundColor: theme.cardAlt }]}>
             <View style={styles.dots}>
               <View style={[styles.dot, { backgroundColor: "#ef4444" }]} />
               <View style={[styles.dot, { backgroundColor: "#eab308" }]} />
               <View style={[styles.dot, { backgroundColor: "#22c55e" }]} />
             </View>
           </View>
-          <View style={styles.codeWrapper}>
-            <Text style={styles.codeText}>{code}</Text>
+          <View style={[styles.codeWrapper, { backgroundColor: isDarkMode ? "#09090b" : theme.cardAlt }]}>
+            <Text style={[styles.codeText, { color: isDarkMode ? "#a5b4fc" : "#4338ca" }]}>{code}</Text>
           </View>
         </View>
 
-        {/* TRIPLE ACTION TOOLBAR ROW */}
         <View style={styles.actionRow}>
-          <TouchableOpacity style={styles.actionButton}>
-            <MaterialCommunityIcons name="content-copy" size={20} color="#a1a1aa" />
-            <Text style={styles.actionButtonText}>COPY</Text>
+          <TouchableOpacity style={[styles.actionButton, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <MaterialCommunityIcons name="content-copy" size={20} color={theme.subText} />
+            <Text style={[styles.actionButtonText, { color: theme.subText }]}>COPY</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.actionButton}>
-            <Feather name="share-2" size={18} color="#a1a1aa" />
-            <Text style={styles.actionButtonText}>SHARE</Text>
+          <TouchableOpacity style={[styles.actionButton, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <Feather name="share-2" size={18} color={theme.subText} />
+            <Text style={[styles.actionButtonText, { color: theme.subText }]}>SHARE</Text>
           </TouchableOpacity>
-
-          <TouchableOpacity style={styles.actionButton}>
-            <Feather name="download" size={18} color="#a1a1aa" />
-            <Text style={styles.actionButtonText}>EXPORT</Text>
+          <TouchableOpacity style={[styles.actionButton, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <Feather name="download" size={18} color={theme.subText} />
+            <Text style={[styles.actionButtonText, { color: theme.subText }]}>EXPORT</Text>
           </TouchableOpacity>
         </View>
 
-        {/* EXPLAIN WITH AI FEATURE INTERFACE CARD */}
-        <View style={styles.aiCard}>
+        <View style={[styles.aiCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <View style={styles.aiHeader}>
-            <View style={styles.aiIconContainer}>
-              <MaterialCommunityIcons name="creation" size={20} color="#60a5fa" />
+            <View style={[styles.aiIconContainer, { backgroundColor: theme.cardAlt }]}>
+              <MaterialCommunityIcons name="creation" size={20} color={theme.primary} />
             </View>
             <View style={styles.aiTextWrapper}>
-              <Text style={styles.aiTitle}>Explain with AI</Text>
-              <Text style={styles.aiDescription}>
+              <Text style={[styles.aiTitle, { color: theme.text }]}>Explain with AI</Text>
+              <Text style={[styles.aiDescription, { color: theme.subText }]}>
                 Get a deep-dive analysis of logic flow, potential edge cases, and optimization suggestions for this snippet.
               </Text>
             </View>
           </View>
-          
-          <TouchableOpacity style={styles.generateButton}>
-            <MaterialCommunityIcons name="lightning-bolt" size={16} color="#1d4ed8" style={{ marginRight: 6 }} />
-            <Text style={styles.generateButtonText}>GENERATE EXPLANATION</Text>
+
+          <TouchableOpacity style={[styles.generateButton, { backgroundColor: theme.primary }]}>
+            <MaterialCommunityIcons name="lightning-bolt" size={16} color={theme.switchThumb} style={{ marginRight: 6 }} />
+            <Text style={[styles.generateButtonText, { color: theme.switchThumb }]}>GENERATE EXPLANATION</Text>
           </TouchableOpacity>
         </View>
 
-        {/* TWO-COLUMN METADATA GRID SECTION */}
         <View style={styles.gridRow}>
-          <View style={styles.gridCard}>
-            <Feather name="clock" size={20} color="#a1a1aa" style={{ marginBottom: 8 }} />
-            <Text style={styles.gridLabel}>Modified</Text>
-            <Text style={styles.gridValue}>{timeAgo}</Text>
+          <View style={[styles.gridCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <Feather name="clock" size={20} color={theme.subText} style={{ marginBottom: 8 }} />
+            <Text style={[styles.gridLabel, { color: theme.text }]}>Modified</Text>
+            <Text style={[styles.gridValue, { color: theme.subText }]}>{timeAgo}</Text>
           </View>
 
-          <View style={styles.gridCard}>
+          <View style={[styles.gridCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
             <View style={styles.avatarRow}>
-              <View style={[styles.avatar, { backgroundColor: "#3b82f6" }]} />
-              <View style={[styles.avatar, { backgroundColor: "#10b981", marginLeft: -8 }]} />
-              <View style={[styles.avatarCount, { marginLeft: -8 }]}>
-                <Text style={styles.avatarCountText}>+4</Text>
+              <View style={[styles.avatar, { backgroundColor: "#3b82f6", borderColor: theme.card }]} />
+              <View style={[styles.avatar, { backgroundColor: "#10b981", marginLeft: -8, borderColor: theme.card }]} />
+              <View style={[styles.avatarCount, { marginLeft: -8, backgroundColor: theme.cardAlt, borderColor: theme.card }]}>
+                <Text style={[styles.avatarCountText, { color: theme.subText }]}>+4</Text>
               </View>
             </View>
-            <Text style={styles.gridLabel}>Shared</Text>
-            <Text style={styles.gridValue}>Viewed 142 times</Text>
+            <Text style={[styles.gridLabel, { color: theme.text }]}>Shared</Text>
+            <Text style={[styles.gridValue, { color: theme.subText }]}>Viewed 142 times</Text>
           </View>
         </View>
-
       </ScrollView>
     </SafeAreaView>
   );
@@ -124,7 +117,6 @@ export default function SnippetDetailsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#09090b",
   },
   header: {
     flexDirection: "row",
@@ -133,10 +125,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     height: 56,
     borderBottomWidth: 1,
-    borderBottomColor: "#18181b",
   },
   headerAppTitle: {
-    color: "#ffffff",
     fontSize: 18,
     fontWeight: "bold",
   },
@@ -152,7 +142,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   snippetTitle: {
-    color: "#ffffff",
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 10,
@@ -163,30 +152,24 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   tagBadge: {
-    backgroundColor: "#141416",
     borderWidth: 1,
-    borderColor: "#222227",
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 6,
   },
   tagText: {
-    color: "#22c55e",
     fontSize: 11,
     fontWeight: "700",
     letterSpacing: 0.5,
   },
   editorWindow: {
-    backgroundColor: "#121214",
     borderWidth: 1,
-    borderColor: "#1e1e24",
     borderRadius: 14,
     overflow: "hidden",
     marginBottom: 20,
   },
   editorHeader: {
     height: 38,
-    backgroundColor: "#161619",
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 14,
@@ -202,10 +185,8 @@ const styles = StyleSheet.create({
   },
   codeWrapper: {
     padding: 16,
-    backgroundColor: "#09090b",
   },
   codeText: {
-    color: "#a5b4fc",
     fontFamily: "monospace",
     fontSize: 13,
     lineHeight: 20,
@@ -217,9 +198,7 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     flex: 1,
-    backgroundColor: "#18181b",
     borderWidth: 1,
-    borderColor: "#27272a",
     height: 52,
     borderRadius: 12,
     justifyContent: "center",
@@ -227,15 +206,12 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   actionButtonText: {
-    color: "#a1a1aa",
     fontSize: 10,
     fontWeight: "700",
     letterSpacing: 0.5,
   },
   aiCard: {
-    backgroundColor: "#151922",
     borderWidth: 1,
-    borderColor: "#1e2638",
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
@@ -249,7 +225,6 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: "#1e293b",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -257,18 +232,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   aiTitle: {
-    color: "#ffffff",
     fontSize: 16,
     fontWeight: "700",
     marginBottom: 4,
   },
   aiDescription: {
-    color: "#94a3b8",
     fontSize: 12,
     lineHeight: 18,
   },
   generateButton: {
-    backgroundColor: "#93b4ff",
     height: 44,
     borderRadius: 10,
     flexDirection: "row",
@@ -276,7 +248,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   generateButtonText: {
-    color: "#1e3a8a",
     fontSize: 12,
     fontWeight: "700",
     letterSpacing: 0.5,
@@ -287,21 +258,17 @@ const styles = StyleSheet.create({
   },
   gridCard: {
     flex: 1,
-    backgroundColor: "#121214",
     borderWidth: 1,
-    borderColor: "#1e1e24",
     borderRadius: 14,
     padding: 16,
     minHeight: 100,
   },
   gridLabel: {
-    color: "#ffffff",
     fontSize: 16,
     fontWeight: "700",
     marginBottom: 2,
   },
   gridValue: {
-    color: "#71717a",
     fontSize: 12,
   },
   avatarRow: {
@@ -314,20 +281,16 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 1.5,
-    borderColor: "#121214",
   },
   avatarCount: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: "#27272a",
     borderWidth: 1.5,
-    borderColor: "#121214",
     justifyContent: "center",
     alignItems: "center",
   },
   avatarCountText: {
-    color: "#a1a1aa",
     fontSize: 9,
     fontWeight: "bold",
   },

@@ -42,20 +42,6 @@ const { theme } = useTheme();
         }}
       />
 
-      {/* <Tabs.Screen
-        name="search"
-        options={{
-          title: 'Search',
-          tabBarIcon: ({ focused }) => (
-            <Ionicons
-              name={focused ? "search" : "search-outline"}
-              size={22}
-              color={focused ? theme.primary : theme.subText}
-            />
-          ),
-        }}
-      /> */}
-
       <Tabs.Screen
         name="favorites"
         options={{
@@ -89,13 +75,11 @@ const { theme } = useTheme();
         options={{
           title: 'Settings',
           tabBarIcon: ({ focused }) => (
-            <View style={focused ? [styles.activeTabWrapper, { backgroundColor: theme.cardAlt }] : null}>
               <Ionicons
                 name={focused ? "settings" : "settings-outline"}
                 size={22}
                 color={focused ? theme.primary : theme.subText}
               />
-            </View>
           ),
         }}
       />

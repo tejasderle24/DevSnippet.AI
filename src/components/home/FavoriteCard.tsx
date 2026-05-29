@@ -1,5 +1,6 @@
+import { useTheme } from "@/context/ThemeContext";
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 interface FavoriteCardProps {
   title: string;
@@ -8,30 +9,33 @@ interface FavoriteCardProps {
 }
 
 export default function FavoriteCard({ title, description, langTag }: FavoriteCardProps) {
+  const { theme } = useTheme();
+
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
       <View style={styles.header}>
-        {/* Simple inline representation of the pink heart icon */}
-        <Text style={styles.heartIcon}>❤️</Text>
-        <View style={styles.tag}>
-          <Text style={styles.tagText}>{langTag}</Text>
+        <Text style={styles.heartIcon}>{"<3"}</Text>
+        <View style={[styles.tag, { backgroundColor: theme.cardAlt }]}>
+          <Text style={[styles.tagText, { color: theme.subText }]}>{langTag}</Text>
         </View>
       </View>
-      <Text style={styles.title} numberOfLines={1}>{title}</Text>
-      <Text style={styles.description} numberOfLines={2}>{description}</Text>
+      <Text style={[styles.title, { color: theme.text }]} numberOfLines={1}>
+        {title}
+      </Text>
+      <Text style={[styles.description, { color: theme.subText }]} numberOfLines={2}>
+        {description}
+      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#121214",
-    borderColor: "#1e1e24",
     borderWidth: 1,
     borderRadius: 14,
     padding: 14,
-    flex: 1, // dynamically sizing handles the grid layout widths
-    minWidth: "46%", 
+    flex: 1,
+    minWidth: "46%",
   },
   header: {
     flexDirection: "row",
@@ -40,27 +44,23 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   heartIcon: {
-    fontSize: 18,
+    fontSize: 16,
   },
   tag: {
-    backgroundColor: "#1e1e24",
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
   },
   tagText: {
-    color: "#a0a0a5",
     fontSize: 10,
     fontWeight: "bold",
   },
   title: {
-    color: "#ffffff",
     fontSize: 14,
     fontWeight: "600",
     marginBottom: 4,
   },
   description: {
-    color: "#a0a0a5",
     fontSize: 12,
     lineHeight: 16,
   },

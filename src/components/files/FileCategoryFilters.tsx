@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { ScrollView, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { useTheme } from "@/context/ThemeContext";
 
 const CATEGORIES = ["ALL FILES", "IMAGES", "DOCS", "CODE", "AUDIO"];
 
 export default function FileCategoryFilters() {
   const [activeTab, setActiveTab] = useState("ALL FILES");
+  const { theme } = useTheme();
 
   return (
     <ScrollView 
@@ -20,10 +22,12 @@ export default function FileCategoryFilters() {
             onPress={() => setActiveTab(category)}
             style={[
               styles.pill,
-              isActive ? styles.pillActive : styles.pillInactive,
+              isActive
+                ? [styles.pillActive, { backgroundColor: theme.cardAlt, borderColor: theme.border }]
+                : [styles.pillInactive, { borderColor: theme.border }],
             ]}
           >
-            <Text style={[styles.pillText, isActive ? styles.textActive : styles.textInactive]}>
+            <Text style={[styles.pillText, isActive ? [styles.textActive, { color: theme.text }] : [styles.textInactive, { color: theme.subText }]]}>
               {category}
             </Text>
           </TouchableOpacity>

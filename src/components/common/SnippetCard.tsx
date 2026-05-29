@@ -1,8 +1,8 @@
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { useTheme } from "@/context/ThemeContext";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons"; 
+import React from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useTheme } from "@/context/ThemeContext";
 
 interface SnippetCardProps {
   id: string;
@@ -14,50 +14,47 @@ interface SnippetCardProps {
 }
 
 export default function SnippetCard({ id, code, title, timeAgo, tags = ["JAVASCRIPT"], isFavorite = true }: SnippetCardProps) {
-  const { theme } = useTheme();
+  const { theme, isDarkMode } = useTheme();
   const router = useRouter();
 
   const handlePress = () => {
     router.push({
       pathname: "/home/snippet-details",
-      params: { id, code, title, timeAgo, tags: JSON.stringify(tags) }
+      params: { id, code, title, timeAgo, tags: JSON.stringify(tags) },
     });
   };
 
   return (
-    <TouchableOpacity 
-      activeOpacity={0.8} 
+    <TouchableOpacity
+      activeOpacity={0.8}
       onPress={handlePress}
-      style={[styles.card, { backgroundColor: "#16161a", borderColor: "#232329" }]}
+      style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}
     >
-      {/* Top Header: Dots, Title, and Star */}
       <View style={styles.cardHeader}>
         <View style={styles.dots}>
           <View style={[styles.dot, { backgroundColor: "#ff5f56" }]} />
           <View style={[styles.dot, { backgroundColor: "#ffbd2e" }]} />
           <View style={[styles.dot, { backgroundColor: "#27c93f" }]} />
         </View>
-        
-        <Text style={styles.titleText}>{title}</Text>
-        
+
+        <Text style={[styles.titleText, { color: theme.subText }]}>{title}</Text>
+
         <TouchableOpacity style={styles.starButton}>
-          <Ionicons name={isFavorite ? "star" : "star-outline"} size={18} color="#93c5fd" />
+          <Ionicons name={isFavorite ? "star" : "star-outline"} size={18} color={theme.primary} />
         </TouchableOpacity>
       </View>
 
-      {/* Code Block Window */}
-      <View style={styles.codeContainer}>
-        <Text style={styles.codeText} numberOfLines={8}>
+      <View style={[styles.codeContainer, { backgroundColor: isDarkMode ? "#09090b" : theme.cardAlt }]}>
+        <Text style={[styles.codeText, { color: isDarkMode ? "#c084fc" : "#5b21b6" }]} numberOfLines={8}>
           {code}
         </Text>
       </View>
 
-      {/* Bottom Footer: Tag and Time */}
       <View style={styles.cardFooter}>
-        <View style={styles.tagContainer}>
-          <Text style={styles.tagText}>{tags[0]}</Text>
+        <View style={[styles.tagContainer, { backgroundColor: theme.cardAlt }]}>
+          <Text style={[styles.tagText, { color: theme.subText }]}>{tags[0]}</Text>
         </View>
-        <Text style={styles.timeText}>{timeAgo}</Text>
+        <Text style={[styles.timeText, { color: theme.subText }]}>{timeAgo}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -85,7 +82,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   titleText: {
-    color: "#a1a1aa",
     fontSize: 13,
     fontFamily: "monospace",
     marginLeft: 14,
@@ -94,13 +90,11 @@ const styles = StyleSheet.create({
     marginLeft: "auto",
   },
   codeContainer: {
-    backgroundColor: "#09090b",
     borderRadius: 10,
     padding: 16,
     minHeight: 120,
   },
   codeText: {
-    color: "#c084fc", 
     fontFamily: "monospace",
     fontSize: 13,
     lineHeight: 20,
@@ -112,19 +106,16 @@ const styles = StyleSheet.create({
     marginTop: 14,
   },
   tagContainer: {
-    backgroundColor: "#27272a",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
   },
   tagText: {
-    color: "#a1a1aa",
     fontSize: 10,
     fontWeight: "bold",
     letterSpacing: 0.5,
   },
   timeText: {
-    color: "#71717a",
     fontSize: 12,
   },
 });

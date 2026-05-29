@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useTheme } from "@/context/ThemeContext";
 
 interface FileItemCardProps {
   filename: string;
@@ -11,35 +12,37 @@ interface FileItemCardProps {
 }
 
 export default function FileItemCard({ filename, meta, preview, icon, iconColor }: FileItemCardProps) {
+  const { theme } = useTheme();
+
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
       {/* Upper Meta Row */}
       <View style={styles.metaRow}>
-        <View style={[styles.iconContainer, { backgroundColor: "#1e1e24" }]}>
+        <View style={[styles.iconContainer, { backgroundColor: theme.cardAlt }]}>
           <MaterialCommunityIcons name={icon} size={22} color={iconColor} />
         </View>
 
         <View style={styles.textContainer}>
-          <Text style={styles.filename}>{filename}</Text>
-          <Text style={styles.metaText}>{meta}</Text>
+          <Text style={[styles.filename, { color: theme.text }]}>{filename}</Text>
+          <Text style={[styles.metaText, { color: theme.subText }]}>{meta}</Text>
         </View>
 
         {/* Action Tray */}
         <View style={styles.actionTray}>
-          <TouchableOpacity style={styles.iconButton}>
-            <Feather name="download" size={16} color="#a1a1aa" />
+          <TouchableOpacity style={[styles.iconButton, { backgroundColor: theme.cardAlt }]}>
+            <Feather name="download" size={16} color={theme.subText} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
-            <Feather name="share-2" size={16} color="#a1a1aa" />
+          <TouchableOpacity style={[styles.iconButton, { backgroundColor: theme.cardAlt }]}>
+            <Feather name="share-2" size={16} color={theme.subText} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
-            <Feather name="trash-2" size={16} color="#ef4444" />
+          <TouchableOpacity style={[styles.iconButton, { backgroundColor: theme.cardAlt }]}>
+            <Feather name="trash-2" size={16} color={theme.danger} />
           </TouchableOpacity>
         </View>
       </View>
 
       {/* Code / Text Block Block */}
-      <View style={styles.previewBox}>
+      <View style={[styles.previewBox, { backgroundColor: theme.background }]}>
         <Text style={[styles.previewText, { color: iconColor }]}>
           {preview}
         </Text>
@@ -88,7 +91,6 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   iconButton: {
-    backgroundColor: "#1e1e24",
     width: 32,
     height: 32,
     borderRadius: 6,

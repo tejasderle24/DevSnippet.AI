@@ -1,106 +1,72 @@
 import Header from "@/components/common/Header";
+import SnippetCard from "@/components/common/SnippetCard";
+import FavoriteCard from "@/components/home/FavoriteCard";
+import LanguageFilters from "@/components/home/LanguageFilters";
 import { useTheme } from "@/context/ThemeContext";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-// Import our new components
-import SnippetCard from "@/components/common/SnippetCard";
-import FavoriteCard from "@/components/home/FavoriteCard";
-import LanguageFilters from "@/components/home/LanguageFilters";
-
 export default function HomeScreen() {
   const { theme, isDarkMode } = useTheme();
-
   const router = useRouter();
 
-  // Dummy dataset representing code from the design mockup
   const mockSnippets = [
     {
       id: "1",
-      filename: "AuthMiddleware.ts",
       title: "Next.js Edge Auth",
       timeAgo: "2h ago",
-      code: "export const middleware = (req: NextReq...\n  const token = req.cookies.get('auth')\n  return NextResponse.next();\n};"
+      code: "export const middleware = (req: NextReq...\\n  const token = req.cookies.get('auth')\\n  return NextResponse.next();\\n};",
+      tags: ["TYPESCRIPT"],
     },
     {
       id: "2",
-      filename: "styles.css",
       title: "Modern Frosted Glass",
       timeAgo: "5h ago",
-      code: ".glass-effect {\n  backdrop-filter: blur(12px);\n  background: rgba(255, 255, 255, 0.1);\n}"
-    }
+      code: ".glass-effect {\\n  backdrop-filter: blur(12px);\\n  background: rgba(255, 255, 255, 0.1);\\n}",
+      tags: ["CSS"],
+    },
   ];
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background || "#09090b" }]}>
-      <StatusBar style={isDarkMode ? 'light' : 'dark'} />
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <StatusBar style={isDarkMode ? "light" : "dark"} />
       <Header />
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-
-        {/* Language Selection Filter Bar */}
         <LanguageFilters />
 
-        {/* Recent Snippets Section */}
         <View style={styles.sectionHeader}>
           <View>
-            <Text style={styles.sectionTitle}>Recent Snippets</Text>
-            <Text style={styles.sectionSubtitle}>Your latest architectural blocks</Text>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>Recent Snippets</Text>
+            <Text style={[styles.sectionSubtitle, { color: theme.subText }]}>Your latest architectural blocks</Text>
           </View>
           <TouchableOpacity onPress={() => router.push("/home/view-all")}>
-            <Text style={styles.viewAllText}>View All →</Text>
+            <Text style={[styles.viewAllText, { color: theme.primary }]}>View All {"->"}</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.listContainer}>
           {mockSnippets.map((item) => (
-            <SnippetCard
-              key={item.id}
-              filename={item.filename}
-              title={item.title}
-              timeAgo={item.timeAgo}
-              code={item.code}
-            />
+            <SnippetCard key={item.id} id={item.id} title={item.title} timeAgo={item.timeAgo} code={item.code} tags={item.tags} />
           ))}
         </View>
 
-        {/* Favorites Section */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Favorites</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Favorites</Text>
         </View>
 
-        {/* Grid System for Favorites */}
         <View style={styles.gridContainer}>
-          <FavoriteCard
-            title="Data Fetcher"
-            description="Efficient async request handler using aiohttp..."
-            langTag="PY"
-          />
-          <FavoriteCard
-            title="Zod Schema"
-            description="User validation schema with nested objects..."
-            langTag="TS"
-          />
-          <FavoriteCard
-            title="Debounce Hook"
-            description="Custom React hook for input performance..."
-            langTag="JS"
-          />
-          <FavoriteCard
-            title="Worker Pool"
-            description="Concurrent task execution manag..."
-            langTag="GO"
-          />
+          <FavoriteCard title="Data Fetcher" description="Efficient async request handler using aiohttp..." langTag="PY" />
+          <FavoriteCard title="Zod Schema" description="User validation schema with nested objects..." langTag="TS" />
+          <FavoriteCard title="Debounce Hook" description="Custom React hook for input performance..." langTag="JS" />
+          <FavoriteCard title="Worker Pool" description="Concurrent task execution manager..." langTag="GO" />
         </View>
       </ScrollView>
 
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() => router.push("/home/create")}
-      >
-        <Text style={styles.fabIcon}>+</Text>
+      <TouchableOpacity style={[styles.fab, { backgroundColor: theme.primary }]} onPress={() => router.push("/home/create")}>
+        <Text style={[styles.fabIcon, { color: theme.switchThumb }]}>+</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -111,7 +77,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 100, // Padding keeps content visible under FAB & navigation
+    paddingBottom: 100,
   },
   sectionHeader: {
     flexDirection: "row",
@@ -122,17 +88,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sectionTitle: {
-    color: "#ffffff",
     fontSize: 22,
     fontWeight: "bold",
   },
   sectionSubtitle: {
-    color: "#71717a",
     fontSize: 13,
     marginTop: 2,
   },
   viewAllText: {
-    color: "#93b4ff",
     fontSize: 14,
     fontWeight: "500",
   },
@@ -150,7 +113,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 24,
     right: 24,
-    backgroundColor: "#b4c6ff",
     width: 56,
     height: 56,
     borderRadius: 16,
@@ -158,12 +120,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     elevation: 5,
     shadowColor: "#000",
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.2,
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 4 },
   },
   fabIcon: {
-    color: "#121214",
     fontSize: 28,
     fontWeight: "300",
   },

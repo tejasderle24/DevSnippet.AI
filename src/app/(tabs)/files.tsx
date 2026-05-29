@@ -56,7 +56,7 @@ export default function FilesScreen() {
 
         {/* Vertical Code Files Section */}
         <View style={styles.codeFilesSection}>
-          <Text style={styles.sectionTitle}>Code Files</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Code Files</Text>
           
           {CODE_FILES_DATA.map((file) => (
             <FileItemCard
@@ -71,9 +71,12 @@ export default function FilesScreen() {
         </View>
 
         {/* Upload Action Target Block */}
-        <TouchableOpacity activeOpacity={0.7} style={styles.uploadContainer}>
-          <Feather name="upload-cloud" size={24} color="#a1a1aa" style={styles.uploadIcon} />
-          <Text style={styles.uploadText}>UPLOAD NEW FILE</Text>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          style={[styles.uploadContainer, { borderColor: theme.border, backgroundColor: theme.card }]}
+        >
+          <Feather name="upload-cloud" size={24} color={theme.subText} style={styles.uploadIcon} />
+          <Text style={[styles.uploadText, { color: theme.subText }]}>UPLOAD NEW FILE</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -92,7 +95,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   sectionTitle: {
-    color: "#ffffff",
     fontSize: 20,
     fontWeight: "700",
     marginBottom: 16,
@@ -112,7 +114,6 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   uploadText: {
-    color: "#a1a1aa",
     fontSize: 11,
     fontWeight: "700",
     letterSpacing: 1,

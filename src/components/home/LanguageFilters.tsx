@@ -1,6 +1,6 @@
+import { useTheme } from "@/context/ThemeContext";
 import React, { useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
-import { useTheme } from "@/context/ThemeContext";
 
 const LANGUAGES = ["ALL LANGUAGES", "REACT", "PYTHON", "TAILWIND"];
 
@@ -9,11 +9,7 @@ export default function LanguageFilters() {
   const [selected, setSelected] = useState("ALL LANGUAGES");
 
   return (
-    <ScrollView 
-      horizontal 
-      showsHorizontalScrollIndicator={false} 
-      contentContainerStyle={styles.container}
-    >
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.container}>
       {LANGUAGES.map((lang) => {
         const isSelected = selected === lang;
         return (
@@ -22,20 +18,13 @@ export default function LanguageFilters() {
             onPress={() => setSelected(lang)}
             style={[
               styles.pill,
-              { 
-                backgroundColor: isSelected ? "#93b4ff" : "#1e1e24",
-                borderColor: isSelected ? "#93b4ff" : "#2d2d34"
-              }
+              {
+                backgroundColor: isSelected ? theme.primary : theme.cardAlt,
+                borderColor: isSelected ? theme.primary : theme.border,
+              },
             ]}
           >
-            <Text 
-              style={[
-                styles.text, 
-                { color: isSelected ? "#000000" : "#a0a0a5" }
-              ]}
-            >
-              {lang}
-            </Text>
+            <Text style={[styles.text, { color: isSelected ? theme.switchThumb : theme.subText }]}>{lang}</Text>
           </TouchableOpacity>
         );
       })}
