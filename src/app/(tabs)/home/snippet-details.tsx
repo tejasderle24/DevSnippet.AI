@@ -2,10 +2,13 @@ import { useTheme } from "@/context/ThemeContext";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Platform, ScrollView, Share, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { deleteSnippet, getSnippetById, initSnippetDb } from "@/lib/snippets-db";
 import { getTimeAgo } from "@/lib/time";
+import * as Clipboard from "expo-clipboard";
+import * as Sharing from "expo-sharing";
+import * as FileSystem from "expo-file-system/legacy";
 
 export default function SnippetDetailsScreen() {
   const { theme, isDarkMode } = useTheme();
@@ -15,6 +18,7 @@ export default function SnippetDetailsScreen() {
   const [title, setTitle] = useState("Loading...");
   const [tags, setTags] = useState<string[]>([]);
   const [code, setCode] = useState("");
+  const [language, setLanguage] = useState("txt");
   const [timeAgo, setTimeAgo] = useState("");
 
   useEffect(() => {
@@ -37,11 +41,134 @@ export default function SnippetDetailsScreen() {
       }
       setTitle(snippet.title);
       setCode(snippet.code);
+      setLanguage(snippet.language.toLowerCase());
       setTags(snippet.tags.length ? snippet.tags : [snippet.language.toUpperCase()]);
       setTimeAgo(getTimeAgo(snippet.updatedAt));
     };
     void loadSnippet();
   }, [params.code, params.tags, params.timeAgo, params.title, snippetId]);
+
+  const sanitizeFileName = (input: string) => input.trim().replace(/[^a-z0-9-_]/gi, "_").toLowerCase();
+
+  const getExportPayload = (format: "js" | "json" | "txt") => {
+    if (format === "json") {
+      return JSON.stringify(
+        {
+          id: snippetId,
+          title,
+          language,
+          tags,
+          code,
+        },
+        null,
+        2
+      );
+    }
+    if (format === "js") {
+      return `// ${title}\n// tags: ${tags.join(", ")}\n\n${code}`;
+    }
+    return code;
+  };
+
+  const handleCopy = async () => {
+    if (!code.trim()) return;
+    await Clipboard.setStringAsync(code);
+    Alert.alert("Copied", "Snippet copied to clipboard.");
+  };
+
+  const buildFileForFormat = async (format: "js" | "json" | "txt") => {
+    const safeName = sanitizeFileName(title || "snippet");
+    const fileName = `${safeName}.${format}`;
+    const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
+    const payload = getExportPayload(format);
+    await FileSystem.writeAsStringAsync(fileUri, payload, { encoding: FileSystem.EncodingType.UTF8 });
+    return { fileUri, fileName };
+  };
+
+  const handleShare = async () => {
+    if (!code.trim()) return;
+
+    Alert.alert("Share snippet as", "Choose a format", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "JS",
+        onPress: async () => {
+          const { fileUri } = await buildFileForFormat("js");
+          const canShare = await Sharing.isAvailableAsync();
+          if (canShare) {
+            await Sharing.shareAsync(fileUri, { mimeType: "text/javascript", dialogTitle: `${title}.js` });
+          } else {
+            await Share.share({ message: getExportPayload("js"), title });
+          }
+        },
+      },
+      {
+        text: "JSON",
+        onPress: async () => {
+          const { fileUri } = await buildFileForFormat("json");
+          const canShare = await Sharing.isAvailableAsync();
+          if (canShare) {
+            await Sharing.shareAsync(fileUri, { mimeType: "application/json", dialogTitle: `${title}.json` });
+          } else {
+            await Share.share({ message: getExportPayload("json"), title });
+          }
+        },
+      },
+      {
+        text: "TXT",
+        onPress: async () => {
+          const { fileUri } = await buildFileForFormat("txt");
+          const canShare = await Sharing.isAvailableAsync();
+          if (canShare) {
+            await Sharing.shareAsync(fileUri, { mimeType: "text/plain", dialogTitle: `${title}.txt` });
+          } else {
+            await Share.share({ message: getExportPayload("txt"), title });
+          }
+        },
+      },
+    ]);
+  };
+
+  const handleExport = async () => {
+    if (!code.trim()) return;
+
+    Alert.alert("Export format", "Choose file type to export", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "JS",
+        onPress: async () => {
+          const { fileUri, fileName } = await buildFileForFormat("js");
+          if (Platform.OS === "web") {
+            Alert.alert("Exported", `${fileName} prepared. Use Share to download on web.`);
+            return;
+          }
+          Alert.alert("Exported", `${fileName} saved to cache.\n${fileUri}`);
+        },
+      },
+      {
+        text: "JSON",
+        onPress: async () => {
+          const { fileUri, fileName } = await buildFileForFormat("json");
+          if (Platform.OS === "web") {
+            Alert.alert("Exported", `${fileName} prepared. Use Share to download on web.`);
+            return;
+          }
+          Alert.alert("Exported", `${fileName} saved to cache.\n${fileUri}`);
+        },
+      },
+      {
+        text: "TXT",
+        onPress: async () => {
+          const { fileUri, fileName } = await buildFileForFormat("txt");
+          if (Platform.OS === "web") {
+            Alert.alert("Exported", `${fileName} prepared. Use Share to download on web.`);
+            return;
+          }
+          Alert.alert("Exported", `${fileName} saved to cache.\n${fileUri}`);
+        },
+      },
+    ]);
+  };
 
   const handleDelete = () => {
     if (!snippetId || Number.isNaN(snippetId)) return;
@@ -104,15 +231,15 @@ export default function SnippetDetailsScreen() {
         </View>
 
         <View style={styles.actionRow}>
-          <TouchableOpacity style={[styles.actionButton, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <TouchableOpacity style={[styles.actionButton, { backgroundColor: theme.card, borderColor: theme.border }]} onPress={handleCopy}>
             <MaterialCommunityIcons name="content-copy" size={20} color={theme.subText} />
             <Text style={[styles.actionButtonText, { color: theme.subText }]}>COPY</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionButton, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <TouchableOpacity style={[styles.actionButton, { backgroundColor: theme.card, borderColor: theme.border }]} onPress={handleShare}>
             <Feather name="share-2" size={18} color={theme.subText} />
             <Text style={[styles.actionButtonText, { color: theme.subText }]}>SHARE</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionButton, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <TouchableOpacity style={[styles.actionButton, { backgroundColor: theme.card, borderColor: theme.border }]} onPress={handleExport}>
             <Feather name="download" size={18} color={theme.subText} />
             <Text style={[styles.actionButtonText, { color: theme.subText }]}>EXPORT</Text>
           </TouchableOpacity>
