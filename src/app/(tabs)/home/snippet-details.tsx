@@ -1,21 +1,62 @@
 import { useTheme } from "@/context/ThemeContext";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import React from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { deleteSnippet, getSnippetById, initSnippetDb } from "@/lib/snippets-db";
+import { getTimeAgo } from "@/lib/time";
 
 export default function SnippetDetailsScreen() {
   const { theme, isDarkMode } = useTheme();
   const router = useRouter();
   const params = useLocalSearchParams();
+  const snippetId = params.id ? Number(params.id) : null;
+  const [title, setTitle] = useState("Loading...");
+  const [tags, setTags] = useState<string[]>([]);
+  const [code, setCode] = useState("");
+  const [timeAgo, setTimeAgo] = useState("");
 
-  const title = (params.title as string) || "FetchUserPayload.ts";
-  const tags: string[] = params.tags ? JSON.parse(params.tags as string) : ["TYPESCRIPT", "REACT CONTEXT"];
-  const code =
-    (params.code as string) ||
-    "import { UserType } from '@/types';\n\nexport const fetchUserData = async (userId) => {\n  const response = await fetch(`/api/users/${userId}`);\n  return response.json();\n};";
-  const timeAgo = (params.timeAgo as string) || "2 hours ago";
+  useEffect(() => {
+    const loadSnippet = async () => {
+      if (!snippetId || Number.isNaN(snippetId)) {
+        setTitle((params.title as string) || "Snippet not found");
+        setCode((params.code as string) || "");
+        setTags(params.tags ? JSON.parse(params.tags as string) : []);
+        setTimeAgo((params.timeAgo as string) || "");
+        return;
+      }
+      await initSnippetDb();
+      const snippet = await getSnippetById(snippetId);
+      if (!snippet) {
+        setTitle("Snippet not found");
+        setCode("");
+        setTags([]);
+        setTimeAgo("");
+        return;
+      }
+      setTitle(snippet.title);
+      setCode(snippet.code);
+      setTags(snippet.tags.length ? snippet.tags : [snippet.language.toUpperCase()]);
+      setTimeAgo(getTimeAgo(snippet.updatedAt));
+    };
+    void loadSnippet();
+  }, [params.code, params.tags, params.timeAgo, params.title, snippetId]);
+
+  const handleDelete = () => {
+    if (!snippetId || Number.isNaN(snippetId)) return;
+    Alert.alert("Delete snippet", "Are you sure you want to delete this snippet?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          await deleteSnippet(snippetId);
+          router.back();
+        },
+      },
+    ]);
+  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={["top"]}>
@@ -26,7 +67,13 @@ export default function SnippetDetailsScreen() {
           <Feather name="arrow-left" size={22} color={theme.text} />
         </TouchableOpacity>
         <Text style={[styles.headerAppTitle, { color: theme.text }]}>DevSnippets AI</Text>
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={() => {
+            if (!snippetId || Number.isNaN(snippetId)) return;
+            router.push({ pathname: "/home/create", params: { id: String(snippetId) } });
+          }}
+        >
           <Feather name="edit-3" size={20} color={theme.text} />
         </TouchableOpacity>
       </View>
@@ -68,6 +115,10 @@ export default function SnippetDetailsScreen() {
           <TouchableOpacity style={[styles.actionButton, { backgroundColor: theme.card, borderColor: theme.border }]}>
             <Feather name="download" size={18} color={theme.subText} />
             <Text style={[styles.actionButtonText, { color: theme.subText }]}>EXPORT</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.actionButton, { backgroundColor: theme.card, borderColor: theme.border }]} onPress={handleDelete}>
+            <Feather name="trash-2" size={18} color={theme.subText} />
+            <Text style={[styles.actionButtonText, { color: theme.subText }]}>DELETE</Text>
           </TouchableOpacity>
         </View>
 

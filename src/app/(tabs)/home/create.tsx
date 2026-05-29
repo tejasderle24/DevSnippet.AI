@@ -1,28 +1,40 @@
 import { useTheme } from "@/context/ThemeContext";
+import { createSnippet, getSnippetById, initSnippetDb, updateSnippet } from "@/lib/snippets-db";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import React, { useState } from "react";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useMemo, useState } from "react";
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function CreateSnippet() {
   const { theme, isDarkMode } = useTheme();
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const editId = params.id ? Number(params.id) : null;
+
+  const [title, setTitle] = useState("");
+  const [code, setCode] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [selectedLanguage, setSelectedLanguage] = useState("TypeScript");
   const [showLanguages, setShowLanguages] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const languages = ["TypeScript", "JavaScript", "Python", "Go", "React", "Node"];
+  const languages = useMemo(() => ["TypeScript", "JavaScript", "Python", "Go", "React", "Node"], []);
+
+  useEffect(() => {
+    const loadSnippet = async () => {
+      if (!editId || Number.isNaN(editId)) return;
+      await initSnippetDb();
+      const snippet = await getSnippetById(editId);
+      if (!snippet) return;
+      setTitle(snippet.title);
+      setCode(snippet.code);
+      setTags(snippet.tags);
+      setSelectedLanguage(snippet.language);
+    };
+    void loadSnippet();
+  }, [editId]);
 
   const getTabFilename = (lang: string): string => {
     switch (lang) {
@@ -44,9 +56,34 @@ export default function CreateSnippet() {
   };
 
   const handleAddTag = () => {
-    if (tagInput.trim()) {
-      setTags([...tags, tagInput.trim()]);
+    const cleaned = tagInput.trim();
+    if (!cleaned) return;
+    if (tags.includes(cleaned)) {
       setTagInput("");
+      return;
+    }
+    setTags([...tags, cleaned]);
+    setTagInput("");
+  };
+
+  const handleSave = async () => {
+    if (!title.trim() || !code.trim()) {
+      Alert.alert("Missing fields", "Please enter both a snippet title and code.");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      if (editId && !Number.isNaN(editId)) {
+        await updateSnippet(editId, { title, code, language: selectedLanguage, tags });
+      } else {
+        await createSnippet({ title, code, language: selectedLanguage, tags });
+      }
+      router.back();
+    } catch {
+      Alert.alert("Save failed", "Could not save snippet. Please try again.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -56,7 +93,7 @@ export default function CreateSnippet() {
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Text style={[styles.backIcon, { color: theme.text }]}>{"<"}</Text>
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.text }]}>New Snippet</Text>
+        <Text style={[styles.headerTitle, { color: theme.text }]}>{editId ? "Edit Snippet" : "New Snippet"}</Text>
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={[styles.cancelBtn, { color: theme.subText }]}>CANCEL</Text>
         </TouchableOpacity>
@@ -70,6 +107,8 @@ export default function CreateSnippet() {
               placeholder="e.g. Fetch API Wrapper"
               placeholderTextColor={theme.mutedText}
               style={[styles.textInput, { backgroundColor: theme.input, borderColor: theme.border, color: theme.text }]}
+              value={title}
+              onChangeText={setTitle}
             />
           </View>
 
@@ -130,6 +169,8 @@ export default function CreateSnippet() {
                   spellCheck={false}
                   autoCorrect={false}
                   autoCapitalize="none"
+                  value={code}
+                  onChangeText={setCode}
                 />
               </View>
             </View>
@@ -139,7 +180,7 @@ export default function CreateSnippet() {
             <Text style={[styles.label, { color: theme.mutedText }]}>TAGS</Text>
             <View style={[styles.tagContainer, { backgroundColor: theme.input, borderColor: theme.border }]}>
               {tags.map((tag, index) => (
-                <View key={index} style={[styles.tag, { backgroundColor: theme.cardAlt }]}>
+                <View key={`${tag}-${index}`} style={[styles.tag, { backgroundColor: theme.cardAlt }]}>
                   <Text style={[styles.tagText, { color: theme.subText }]}>{tag}</Text>
                   <TouchableOpacity onPress={() => setTags(tags.filter((_, i) => i !== index))}>
                     <Ionicons name="close" size={14} color={theme.subText} />
@@ -166,31 +207,14 @@ export default function CreateSnippet() {
             </View>
           </View>
 
-          <TouchableOpacity style={[styles.attachBtn, { borderColor: theme.border, backgroundColor: theme.card }]}>
-            <Ionicons name="attach" size={20} color={theme.primary} />
-            <Text style={[styles.attachBtnText, { color: theme.primary }]}>ATTACH FILE</Text>
-          </TouchableOpacity>
-
           <View style={[styles.banner, { backgroundColor: theme.card, borderColor: theme.border }]}>
             <View style={[styles.bannerIcon, { backgroundColor: theme.cardAlt }]}>
-              <MaterialCommunityIcons name="creation" size={20} color={theme.primary} />
+              <MaterialCommunityIcons name="database" size={20} color={theme.primary} />
             </View>
             <View style={styles.bannerTextContainer}>
-              <Text style={[styles.bannerTitle, { color: theme.text }]}>AI Optimization</Text>
+              <Text style={[styles.bannerTitle, { color: theme.text }]}>Stored Locally</Text>
               <Text style={[styles.bannerSub, { color: theme.subText }]}>
-                Your snippet will be automatically indexed and searchable by the AI assistant.
-              </Text>
-            </View>
-          </View>
-
-          <View style={[styles.banner, { backgroundColor: theme.card, borderColor: theme.border }]}>
-            <View style={[styles.bannerIcon, { backgroundColor: theme.cardAlt }]}>
-              <MaterialCommunityIcons name="cloud-sync" size={20} color={theme.primary} />
-            </View>
-            <View style={styles.bannerTextContainer}>
-              <Text style={[styles.bannerTitle, { color: theme.text }]}>Auto-sync Active</Text>
-              <Text style={[styles.bannerSub, { color: theme.subText }]}>
-                All changes are saved to your global cloud vault instantly.
+                Snippets are saved to your local SQLite database and available offline.
               </Text>
             </View>
           </View>
@@ -198,9 +222,13 @@ export default function CreateSnippet() {
       </KeyboardAvoidingView>
 
       <View style={[styles.footer, { borderTopColor: theme.border }]}>
-        <TouchableOpacity style={[styles.saveBtn, { backgroundColor: theme.primary }]}>
+        <TouchableOpacity
+          style={[styles.saveBtn, { backgroundColor: theme.primary, opacity: isSaving ? 0.6 : 1 }]}
+          onPress={handleSave}
+          disabled={isSaving}
+        >
           <MaterialCommunityIcons name="content-save-outline" size={22} color={theme.switchThumb} />
-          <Text style={[styles.saveBtnText, { color: theme.switchThumb }]}>Save Snippet</Text>
+          <Text style={[styles.saveBtnText, { color: theme.switchThumb }]}>{isSaving ? "Saving..." : "Save Snippet"}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -325,17 +353,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginLeft: 6,
   },
-  attachBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 20,
-    padding: 12,
-    borderWidth: 1,
-    borderRadius: 10,
-    gap: 8,
-  },
-  attachBtnText: { fontSize: 12, fontWeight: "bold" },
   banner: {
     flexDirection: "row",
     marginTop: 20,
@@ -362,3 +379,4 @@ const styles = StyleSheet.create({
   },
   saveBtnText: { fontSize: 16, fontWeight: "bold" },
 });
+

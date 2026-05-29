@@ -3,31 +3,40 @@ import SnippetCard from "@/components/common/SnippetCard";
 import FavoriteCard from "@/components/home/FavoriteCard";
 import LanguageFilters from "@/components/home/LanguageFilters";
 import { useTheme } from "@/context/ThemeContext";
+import { getAllSnippets, initSnippetDb } from "@/lib/snippets-db";
+import { getTimeAgo } from "@/lib/time";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useCallback, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function HomeScreen() {
   const { theme, isDarkMode } = useTheme();
   const router = useRouter();
+  const [snippets, setSnippets] = useState<
+    { id: string; title: string; code: string; tags: string[]; timeAgo: string }[]
+  >([]);
 
-  const mockSnippets = [
-    {
-      id: "1",
-      title: "Next.js Edge Auth",
-      timeAgo: "2h ago",
-      code: "export const middleware = (req: NextReq...\\n  const token = req.cookies.get('auth')\\n  return NextResponse.next();\\n};",
-      tags: ["TYPESCRIPT"],
-    },
-    {
-      id: "2",
-      title: "Modern Frosted Glass",
-      timeAgo: "5h ago",
-      code: ".glass-effect {\\n  backdrop-filter: blur(12px);\\n  background: rgba(255, 255, 255, 0.1);\\n}",
-      tags: ["CSS"],
-    },
-  ];
+  const loadRecent = useCallback(async () => {
+    await initSnippetDb();
+    const all = await getAllSnippets();
+    const recent = all.slice(0, 5).map((item) => ({
+      id: String(item.id),
+      title: item.title,
+      code: item.code,
+      tags: item.tags.length ? item.tags : [item.language.toUpperCase()],
+      timeAgo: getTimeAgo(item.updatedAt),
+    }));
+    setSnippets(recent);
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadRecent();
+    }, [loadRecent])
+  );
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -48,9 +57,10 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.listContainer}>
-          {mockSnippets.map((item) => (
+          {snippets.map((item) => (
             <SnippetCard key={item.id} id={item.id} title={item.title} timeAgo={item.timeAgo} code={item.code} tags={item.tags} />
           ))}
+          {snippets.length === 0 && <Text style={{ color: theme.subText }}>No snippets yet. Tap + to create one.</Text>}
         </View>
 
         <View style={styles.sectionHeader}>

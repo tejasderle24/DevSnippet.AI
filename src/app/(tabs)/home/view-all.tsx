@@ -1,47 +1,50 @@
 import SnippetCard from "@/components/common/SnippetCard";
 import { useTheme } from "@/context/ThemeContext";
+import { getAllSnippets, initSnippetDb, searchSnippets } from "@/lib/snippets-db";
+import { getTimeAgo } from "@/lib/time";
+import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-const ALL_SNIPPETS = [
-  {
-    id: "1",
-    title: "Next.js Edge Auth",
-    timeAgo: "2h ago",
-    code: "export const middleware = (req: NextReq...\\n  const token = req.cookies.get('auth')\\n  return NextResponse.next();\\n};",
-    tags: ["TYPESCRIPT"],
-  },
-  {
-    id: "2",
-    title: "Modern Frosted Glass",
-    timeAgo: "5h ago",
-    code: ".glass-effect {\\n  backdrop-filter: blur(12px);\\n  background: rgba(255, 255, 255, 0.1);\\n}",
-    tags: ["CSS"],
-  },
-  {
-    id: "3",
-    title: "Async Data Fetcher",
-    timeAgo: "1 day ago",
-    code: "import aiohttp\\nimport asyncio\\n\\nasync def fetch(session, url):\\n    async with session.get(url) as response:\\n        return await response.json()",
-    tags: ["PYTHON"],
-  },
-  {
-    id: "4",
-    title: "Custom React Debounce Hook",
-    timeAgo: "3 days ago",
-    code: "function useDebounce(value, delay) {\\n  const [debouncedValue, setDebouncedValue] = useState(value);\\n  // hook implementation...\\n}",
-    tags: ["JAVASCRIPT"],
-  },
-];
 
 export default function ViewAllScreen() {
   const { theme } = useTheme();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const [snippets, setSnippets] = useState<
+    { id: string; title: string; code: string; tags: string[]; timeAgo: string }[]
+  >([]);
 
-  const filteredSnippets = ALL_SNIPPETS.filter((snippet) => snippet.title.toLowerCase().includes(searchQuery.toLowerCase()));
+  const mapSnippets = useCallback(
+    (items: Awaited<ReturnType<typeof getAllSnippets>>) =>
+      items.map((item) => ({
+        id: String(item.id),
+        title: item.title,
+        code: item.code,
+        tags: item.tags.length ? item.tags : [item.language.toUpperCase()],
+        timeAgo: getTimeAgo(item.updatedAt),
+      })),
+    []
+  );
+
+  const loadSnippets = useCallback(async () => {
+    await initSnippetDb();
+    const data = searchQuery.trim() ? await searchSnippets(searchQuery) : await getAllSnippets();
+    setSnippets(mapSnippets(data));
+  }, [mapSnippets, searchQuery]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadSnippets();
+    }, [loadSnippets])
+  );
+
+  const handleSearchChange = async (value: string) => {
+    setSearchQuery(value);
+    const data = value.trim() ? await searchSnippets(value) : await getAllSnippets();
+    setSnippets(mapSnippets(data));
+  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -59,14 +62,14 @@ export default function ViewAllScreen() {
           placeholderTextColor={theme.subText}
           style={[styles.searchInput, { backgroundColor: theme.input, borderColor: theme.border, color: theme.text }]}
           value={searchQuery}
-          onChangeText={setSearchQuery}
+          onChangeText={handleSearchChange}
         />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <View style={styles.listContainer}>
-          {filteredSnippets.length > 0 ? (
-            filteredSnippets.map((item) => (
+          {snippets.length > 0 ? (
+            snippets.map((item) => (
               <SnippetCard key={item.id} id={item.id} title={item.title} timeAgo={item.timeAgo} code={item.code} tags={item.tags} />
             ))
           ) : (

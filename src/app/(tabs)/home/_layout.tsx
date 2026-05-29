@@ -24,6 +24,14 @@ export default function HomeLayout() {
           title: "All Snippet",
         }}
       />
+
+      <Stack.Screen
+        name="snippet-details"
+        options={{
+          headerShown: false,
+          title: "Snippet Details",
+        }}
+      />
     </Stack>
   );
 }
