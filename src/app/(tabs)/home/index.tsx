@@ -3,35 +3,94 @@ import SnippetCard from "@/components/common/SnippetCard";
 import FavoriteCard from "@/components/home/FavoriteCard";
 import LanguageFilters from "@/components/home/LanguageFilters";
 import { useTheme } from "@/context/ThemeContext";
-import { getAllSnippets, initSnippetDb } from "@/lib/snippets-db";
+import { getAllSnippets, getFavoriteSnippets, initSnippetDb } from "@/lib/snippets-db";
 import { getTimeAgo } from "@/lib/time";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useState } from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
 
 export default function HomeScreen() {
   const { theme, isDarkMode } = useTheme();
   const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedLanguage, setSelectedLanguage] = useState("ALL");
+  const [allSnippets, setAllSnippets] = useState<
+    { id: string; title: string; code: string; tags: string[]; timeAgo: string; isFavorite: boolean; language: string }[]
+  >([]);
   const [snippets, setSnippets] = useState<
     { id: string; title: string; code: string; tags: string[]; timeAgo: string; isFavorite: boolean }[]
   >([]);
+  const [favoriteCards, setFavoriteCards] = useState<{ id: string; title: string; langTag: string }[]>([]);
+
+  const applyFilters = useCallback(
+    (source: { id: string; title: string; code: string; tags: string[]; timeAgo: string; isFavorite: boolean; language: string }[]) => {
+      const q = searchQuery.trim().toLowerCase();
+      const filtered = source.filter((item) => {
+        const languageOk = selectedLanguage === "ALL" || item.language.toUpperCase() === selectedLanguage;
+        if (!languageOk) return false;
+        if (!q) return true;
+        return (
+          item.title.toLowerCase().includes(q) ||
+          item.code.toLowerCase().includes(q) ||
+          item.tags.some((tag) => tag.toLowerCase().includes(q))
+        );
+      });
+      setSnippets(filtered.slice(0, 5));
+    },
+    [searchQuery, selectedLanguage]
+  );
 
   const loadRecent = useCallback(async () => {
     await initSnippetDb();
     const all = await getAllSnippets();
-    const recent = all.slice(0, 5).map((item) => ({
+    const mapped = all.map((item) => ({
       id: String(item.id),
       title: item.title,
       code: item.code,
       tags: item.tags.length ? item.tags : [item.language.toUpperCase()],
       timeAgo: getTimeAgo(item.updatedAt),
       isFavorite: item.isFavorite,
+      language: item.language,
     }));
-    setSnippets(recent);
-  }, []);
+    setAllSnippets(mapped);
+    applyFilters(mapped);
+
+    const favorites = await getFavoriteSnippets();
+    setFavoriteCards(
+      favorites.slice(0, 4).map((item) => ({
+        id: String(item.id),
+        title: item.title,
+        langTag: (item.tags[0] || item.language).toUpperCase(),
+      }))
+    );
+  }, [applyFilters]);
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    const q = value.trim().toLowerCase();
+    const filtered = allSnippets.filter((item) => {
+      const languageOk = selectedLanguage === "ALL" || item.language.toUpperCase() === selectedLanguage;
+      if (!languageOk) return false;
+      if (!q) return true;
+      return item.title.toLowerCase().includes(q) || item.code.toLowerCase().includes(q) || item.tags.some((tag) => tag.toLowerCase().includes(q));
+    });
+    setSnippets(filtered.slice(0, 5));
+  };
+
+  const handleLanguageChange = (language: string) => {
+    setSelectedLanguage(language);
+    const q = searchQuery.trim().toLowerCase();
+    const filtered = allSnippets.filter((item) => {
+      const languageOk = language === "ALL" || item.language.toUpperCase() === language;
+      if (!languageOk) return false;
+      if (!q) return true;
+      return item.title.toLowerCase().includes(q) || item.code.toLowerCase().includes(q) || item.tags.some((tag) => tag.toLowerCase().includes(q));
+    });
+    setSnippets(filtered.slice(0, 5));
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -45,7 +104,17 @@ export default function HomeScreen() {
       <Header />
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        <LanguageFilters />
+        <View style={styles.searchContainer}>
+          <TextInput
+            placeholder="Search recent snippets..."
+            placeholderTextColor={theme.subText}
+            style={[styles.searchInput, { backgroundColor: theme.input, borderColor: theme.border, color: theme.text }]}
+            value={searchQuery}
+            onChangeText={handleSearchChange}
+          />
+        </View>
+
+        <LanguageFilters selected={selectedLanguage} onSelect={handleLanguageChange} />
 
         <View style={styles.sectionHeader}>
           <View>
@@ -77,10 +146,10 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.gridContainer}>
-          <FavoriteCard title="Data Fetcher" description="Efficient async request handler using aiohttp..." langTag="PY" />
-          <FavoriteCard title="Zod Schema" description="User validation schema with nested objects..." langTag="TS" />
-          <FavoriteCard title="Debounce Hook" description="Custom React hook for input performance..." langTag="JS" />
-          <FavoriteCard title="Worker Pool" description="Concurrent task execution manager..." langTag="GO" />
+          {favoriteCards.map((item) => (
+            <FavoriteCard key={item.id} title={item.title} langTag={item.langTag} />
+          ))}
+          {favoriteCards.length === 0 && <Text style={{ color: theme.subText }}>No favorites yet.</Text>}
         </View>
       </ScrollView>
 
@@ -97,6 +166,17 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 100,
+  },
+  searchContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 10,
+  },
+  searchInput: {
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 14,
   },
   sectionHeader: {
     flexDirection: "row",

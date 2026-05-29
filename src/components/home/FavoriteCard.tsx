@@ -4,8 +4,8 @@ import { StyleSheet, Text, View } from "react-native";
 
 interface FavoriteCardProps {
   title: string;
-  description: string;
   langTag: string;
+  description?: string;
 }
 
 export default function FavoriteCard({ title, description, langTag }: FavoriteCardProps) {
@@ -22,9 +22,11 @@ export default function FavoriteCard({ title, description, langTag }: FavoriteCa
       <Text style={[styles.title, { color: theme.text }]} numberOfLines={1}>
         {title}
       </Text>
-      <Text style={[styles.description, { color: theme.subText }]} numberOfLines={2}>
-        {description}
-      </Text>
+      {description ? (
+        <Text style={[styles.description, { color: theme.subText }]} numberOfLines={2}>
+          {description}
+        </Text>
+      ) : null}
     </View>
   );
 }

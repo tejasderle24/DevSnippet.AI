@@ -1,4 +1,5 @@
 import SnippetCard from "@/components/common/SnippetCard";
+import LanguageFilters from "@/components/home/LanguageFilters";
 import { useTheme } from "@/context/ThemeContext";
 import { getAllSnippets, initSnippetDb, searchSnippets } from "@/lib/snippets-db";
 import { getTimeAgo } from "@/lib/time";
@@ -12,8 +13,12 @@ export default function ViewAllScreen() {
   const { theme } = useTheme();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedLanguage, setSelectedLanguage] = useState("ALL");
+  const [allSnippets, setAllSnippets] = useState<
+    { id: string; title: string; code: string; tags: string[]; timeAgo: string; isFavorite: boolean; language: string }[]
+  >([]);
   const [snippets, setSnippets] = useState<
-    { id: string; title: string; code: string; tags: string[]; timeAgo: string; isFavorite: boolean }[]
+    { id: string; title: string; code: string; tags: string[]; timeAgo: string; isFavorite: boolean; language: string }[]
   >([]);
 
   const mapSnippets = useCallback(
@@ -25,15 +30,36 @@ export default function ViewAllScreen() {
         tags: item.tags.length ? item.tags : [item.language.toUpperCase()],
         timeAgo: getTimeAgo(item.updatedAt),
         isFavorite: item.isFavorite,
+        language: item.language,
       })),
     []
+  );
+
+  const applyFilters = useCallback(
+    (source: { id: string; title: string; code: string; tags: string[]; timeAgo: string; isFavorite: boolean; language: string }[]) => {
+      const q = searchQuery.trim().toLowerCase();
+      const filtered = source.filter((item) => {
+        const languageOk = selectedLanguage === "ALL" || item.language.toUpperCase() === selectedLanguage;
+        if (!languageOk) return false;
+        if (!q) return true;
+        return (
+          item.title.toLowerCase().includes(q) ||
+          item.code.toLowerCase().includes(q) ||
+          item.tags.some((tag) => tag.toLowerCase().includes(q))
+        );
+      });
+      setSnippets(filtered);
+    },
+    [searchQuery, selectedLanguage]
   );
 
   const loadSnippets = useCallback(async () => {
     await initSnippetDb();
     const data = searchQuery.trim() ? await searchSnippets(searchQuery) : await getAllSnippets();
-    setSnippets(mapSnippets(data));
-  }, [mapSnippets, searchQuery]);
+    const mapped = mapSnippets(data);
+    setAllSnippets(mapped);
+    applyFilters(mapped);
+  }, [applyFilters, mapSnippets, searchQuery]);
 
   useFocusEffect(
     useCallback(() => {
@@ -44,7 +70,28 @@ export default function ViewAllScreen() {
   const handleSearchChange = async (value: string) => {
     setSearchQuery(value);
     const data = value.trim() ? await searchSnippets(value) : await getAllSnippets();
-    setSnippets(mapSnippets(data));
+    const mapped = mapSnippets(data);
+    setAllSnippets(mapped);
+    const q = value.trim().toLowerCase();
+    const filtered = mapped.filter((item) => {
+      const languageOk = selectedLanguage === "ALL" || item.language.toUpperCase() === selectedLanguage;
+      if (!languageOk) return false;
+      if (!q) return true;
+      return item.title.toLowerCase().includes(q) || item.code.toLowerCase().includes(q) || item.tags.some((tag) => tag.toLowerCase().includes(q));
+    });
+    setSnippets(filtered);
+  };
+
+  const handleLanguageChange = (language: string) => {
+    setSelectedLanguage(language);
+    const q = searchQuery.trim().toLowerCase();
+    const filtered = allSnippets.filter((item) => {
+      const languageOk = language === "ALL" || item.language.toUpperCase() === language;
+      if (!languageOk) return false;
+      if (!q) return true;
+      return item.title.toLowerCase().includes(q) || item.code.toLowerCase().includes(q) || item.tags.some((tag) => tag.toLowerCase().includes(q));
+    });
+    setSnippets(filtered);
   };
 
   return (
@@ -66,6 +113,8 @@ export default function ViewAllScreen() {
           onChangeText={handleSearchChange}
         />
       </View>
+
+      <LanguageFilters selected={selectedLanguage} onSelect={handleLanguageChange} />
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <View style={styles.listContainer}>

@@ -1,21 +1,26 @@
 import { useTheme } from "@/context/ThemeContext";
-import React, { useState } from "react";
+import React from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
 
-const LANGUAGES = ["ALL LANGUAGES", "REACT", "PYTHON", "TAILWIND"];
+const DEFAULT_LANGUAGES = ["ALL", "TYPESCRIPT", "JAVASCRIPT", "PYTHON", "GO", "REACT", "NODE", "CSS", "TAILWIND"];
 
-export default function LanguageFilters() {
+interface LanguageFiltersProps {
+  selected: string;
+  onSelect: (language: string) => void;
+  languages?: string[];
+}
+
+export default function LanguageFilters({ selected, onSelect, languages = DEFAULT_LANGUAGES }: LanguageFiltersProps) {
   const { theme } = useTheme();
-  const [selected, setSelected] = useState("ALL LANGUAGES");
 
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.container}>
-      {LANGUAGES.map((lang) => {
+      {languages.map((lang) => {
         const isSelected = selected === lang;
         return (
           <TouchableOpacity
             key={lang}
-            onPress={() => setSelected(lang)}
+            onPress={() => onSelect(lang)}
             style={[
               styles.pill,
               {
