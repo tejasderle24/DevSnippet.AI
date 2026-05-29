@@ -142,3 +142,24 @@ export async function searchSnippets(query: string): Promise<Snippet[]> {
   return rows.map(mapSnippet);
 }
 
+export async function getFavoriteSnippets(): Promise<Snippet[]> {
+  await initSnippetDb();
+  const db = await getDb();
+  const rows = await db.getAllAsync<SnippetRow>(
+    `SELECT * FROM ${TABLE_NAME} WHERE is_favorite = 1 ORDER BY updated_at DESC`
+  );
+  return rows.map(mapSnippet);
+}
+
+export async function setSnippetFavorite(id: number, isFavorite: boolean): Promise<boolean> {
+  await initSnippetDb();
+  const db = await getDb();
+  const now = new Date().toISOString();
+  const result = await db.runAsync(
+    `UPDATE ${TABLE_NAME} SET is_favorite = ?, updated_at = ? WHERE id = ?`,
+    isFavorite ? 1 : 0,
+    now,
+    id
+  );
+  return result.changes > 0;
+}

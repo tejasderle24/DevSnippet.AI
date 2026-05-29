@@ -13,7 +13,7 @@ export default function ViewAllScreen() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [snippets, setSnippets] = useState<
-    { id: string; title: string; code: string; tags: string[]; timeAgo: string }[]
+    { id: string; title: string; code: string; tags: string[]; timeAgo: string; isFavorite: boolean }[]
   >([]);
 
   const mapSnippets = useCallback(
@@ -24,6 +24,7 @@ export default function ViewAllScreen() {
         code: item.code,
         tags: item.tags.length ? item.tags : [item.language.toUpperCase()],
         timeAgo: getTimeAgo(item.updatedAt),
+        isFavorite: item.isFavorite,
       })),
     []
   );
@@ -70,7 +71,15 @@ export default function ViewAllScreen() {
         <View style={styles.listContainer}>
           {snippets.length > 0 ? (
             snippets.map((item) => (
-              <SnippetCard key={item.id} id={item.id} title={item.title} timeAgo={item.timeAgo} code={item.code} tags={item.tags} />
+              <SnippetCard
+                key={item.id}
+                id={item.id}
+                title={item.title}
+                timeAgo={item.timeAgo}
+                code={item.code}
+                tags={item.tags}
+                isFavorite={item.isFavorite}
+              />
             ))
           ) : (
             <Text style={[styles.emptyText, { color: theme.subText }]}>No snippets found matching your search.</Text>

@@ -32,7 +32,7 @@ const CODE_FILES_DATA = [
     filename: "README.txt",
     meta: "Modified Yesterday  •  0.8 KB",
     preview: `Project documentation for the AI Snippets engine.`,
-    icon: "file-text-outline" as const,
+    icon: "file-document-outline" as const,
     iconColor: "#a1a1aa", // Gray Tint
   }
 ];

@@ -16,7 +16,7 @@ export default function HomeScreen() {
   const { theme, isDarkMode } = useTheme();
   const router = useRouter();
   const [snippets, setSnippets] = useState<
-    { id: string; title: string; code: string; tags: string[]; timeAgo: string }[]
+    { id: string; title: string; code: string; tags: string[]; timeAgo: string; isFavorite: boolean }[]
   >([]);
 
   const loadRecent = useCallback(async () => {
@@ -28,6 +28,7 @@ export default function HomeScreen() {
       code: item.code,
       tags: item.tags.length ? item.tags : [item.language.toUpperCase()],
       timeAgo: getTimeAgo(item.updatedAt),
+      isFavorite: item.isFavorite,
     }));
     setSnippets(recent);
   }, []);
@@ -58,7 +59,15 @@ export default function HomeScreen() {
 
         <View style={styles.listContainer}>
           {snippets.map((item) => (
-            <SnippetCard key={item.id} id={item.id} title={item.title} timeAgo={item.timeAgo} code={item.code} tags={item.tags} />
+            <SnippetCard
+              key={item.id}
+              id={item.id}
+              title={item.title}
+              timeAgo={item.timeAgo}
+              code={item.code}
+              tags={item.tags}
+              isFavorite={item.isFavorite}
+            />
           ))}
           {snippets.length === 0 && <Text style={{ color: theme.subText }}>No snippets yet. Tap + to create one.</Text>}
         </View>

@@ -1,8 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useTheme } from "@/context/ThemeContext";
+import { setSnippetFavorite } from "@/lib/snippets-db";
 
 interface SnippetCardProps {
   id: string;
@@ -11,17 +12,44 @@ interface SnippetCardProps {
   timeAgo: string;
   tags?: string[];
   isFavorite?: boolean;
+  onFavoriteChange?: (id: string, isFavorite: boolean) => void;
 }
 
-export default function SnippetCard({ id, code, title, timeAgo, tags = ["JAVASCRIPT"], isFavorite = true }: SnippetCardProps) {
+export default function SnippetCard({
+  id,
+  code,
+  title,
+  timeAgo,
+  tags = ["JAVASCRIPT"],
+  isFavorite = false,
+  onFavoriteChange,
+}: SnippetCardProps) {
   const { theme, isDarkMode } = useTheme();
   const router = useRouter();
+  const [favoriteState, setFavoriteState] = useState(isFavorite);
+
+  useEffect(() => {
+    setFavoriteState(isFavorite);
+  }, [isFavorite]);
 
   const handlePress = () => {
     router.push({
       pathname: "/home/snippet-details",
       params: { id, code, title, timeAgo, tags: JSON.stringify(tags) },
     });
+  };
+
+  const handleToggleFavorite = async () => {
+    const snippetId = Number(id);
+    if (Number.isNaN(snippetId)) return;
+    const next = !favoriteState;
+    setFavoriteState(next);
+    const ok = await setSnippetFavorite(snippetId, next);
+    if (!ok) {
+      setFavoriteState(!next);
+      return;
+    }
+    onFavoriteChange?.(id, next);
   };
 
   return (
@@ -39,8 +67,8 @@ export default function SnippetCard({ id, code, title, timeAgo, tags = ["JAVASCR
 
         <Text style={[styles.titleText, { color: theme.subText }]}>{title}</Text>
 
-        <TouchableOpacity style={styles.starButton}>
-          <Ionicons name={isFavorite ? "star" : "star-outline"} size={18} color={theme.primary} />
+        <TouchableOpacity style={styles.starButton} onPress={handleToggleFavorite}>
+          <Ionicons name={favoriteState ? "star" : "star-outline"} size={18} color={theme.primary} />
         </TouchableOpacity>
       </View>
 
