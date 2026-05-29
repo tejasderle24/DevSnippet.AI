@@ -46,6 +46,17 @@ const SettingsScreen = () => {
           <Feather name="chevron-right" size={20} color={theme.subText} />
         </TouchableOpacity>
 
+        <SectionHeader title="API Configuration" textStyle={{ color: theme.mutedText }} />
+        <TouchableOpacity style={[styles.groupedRowsContainer, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <SettingRow
+            icon={<Ionicons name="key-outline" size={18} color={theme.icon} />}
+            title="Manage API Keys"
+            titleStyle={{ color: theme.text }}
+            rightElement={<Feather name="chevron-right" size={18} color={theme.icon} />}
+          />
+        
+        </TouchableOpacity>
+
         <SectionHeader title="APPEARANCE" textStyle={{ color: theme.mutedText }} />
         <View style={[styles.groupedRowsContainer, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <SettingRow

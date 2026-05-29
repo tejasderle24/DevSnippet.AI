@@ -14,7 +14,7 @@ export default function FavoriteCard({ title, description, langTag }: FavoriteCa
   return (
     <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
       <View style={styles.header}>
-        <Text style={styles.heartIcon}>{"<3"}</Text>
+        <Text style={styles.heartIcon}>{"❤️"}</Text>
         <View style={[styles.tag, { backgroundColor: theme.cardAlt }]}>
           <Text style={[styles.tagText, { color: theme.subText }]}>{langTag}</Text>
         </View>
