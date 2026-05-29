@@ -83,6 +83,12 @@ const { theme } = useTheme();
           ),
         }}
       />
+      <Tabs.Screen
+        name="manage-api-keys"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

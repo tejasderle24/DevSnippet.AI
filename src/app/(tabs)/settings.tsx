@@ -1,4 +1,5 @@
 import React from 'react';
+import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import {
@@ -19,6 +20,7 @@ import { useTheme } from '@/context/ThemeContext';
 
 const SettingsScreen = () => {
   const { theme, isDarkMode, toggleTheme } = useTheme();
+  const router = useRouter();
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -47,7 +49,11 @@ const SettingsScreen = () => {
         </TouchableOpacity>
 
         <SectionHeader title="API Configuration" textStyle={{ color: theme.mutedText }} />
-        <TouchableOpacity style={[styles.groupedRowsContainer, { backgroundColor: theme.card, borderColor: theme.border }]}>
+        <TouchableOpacity
+          style={[styles.groupedRowsContainer, { backgroundColor: theme.card, borderColor: theme.border }]}
+          onPress={() => router.push("./manage-api-keys")}
+          activeOpacity={0.7}
+        >
           <SettingRow
             icon={<Ionicons name="key-outline" size={18} color={theme.icon} />}
             title="Manage API Keys"

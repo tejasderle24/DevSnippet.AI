@@ -9,6 +9,7 @@ import { getTimeAgo } from "@/lib/time";
 import * as Clipboard from "expo-clipboard";
 import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system/legacy";
+import { getApiKey } from "@/lib/ai-key";
 
 export default function SnippetDetailsScreen() {
   const { theme, isDarkMode } = useTheme();
@@ -20,6 +21,8 @@ export default function SnippetDetailsScreen() {
   const [code, setCode] = useState("");
   const [language, setLanguage] = useState("txt");
   const [timeAgo, setTimeAgo] = useState("");
+  const [isGeneratingExplanation, setIsGeneratingExplanation] = useState(false);
+  const [explanation, setExplanation] = useState("");
 
   useEffect(() => {
     const loadSnippet = async () => {
@@ -185,6 +188,62 @@ export default function SnippetDetailsScreen() {
     ]);
   };
 
+  const handleGenerateExplanation = async () => {
+    if (!code.trim()) {
+      Alert.alert("No code", "This snippet has no code to explain.");
+      return;
+    }
+
+    const apiKey = await getApiKey();
+    if (!apiKey) {
+      Alert.alert("Missing API key", "Open Settings > Manage API Keys and save your OpenAI API key first.");
+      return;
+    }
+
+    try {
+      setIsGeneratingExplanation(true);
+      const prompt = [
+        "Explain this code snippet in clear sections.",
+        "Include: summary, logic flow, edge cases, and improvement ideas.",
+        `Title: ${title}`,
+        `Language: ${language}`,
+        "Code:",
+        code,
+      ].join("\n");
+
+      const response = await fetch("https://api.openai.com/v1/responses", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "gpt-4.1-mini",
+          input: prompt,
+        }),
+      });
+
+      if (!response.ok) {
+        const body = await response.text();
+        throw new Error(`Request failed (${response.status}): ${body}`);
+      }
+
+      const data = (await response.json()) as { output_text?: string };
+      const explanationText = data.output_text?.trim();
+
+      if (!explanationText) {
+        throw new Error("No explanation returned.");
+      }
+
+      setExplanation(explanationText);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unexpected error.";
+      Alert.alert("Generation failed", message);
+    } finally {
+      setIsGeneratingExplanation(false);
+    }
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={["top"]}>
       <Stack.Screen options={{ headerShown: false }} />
@@ -262,10 +321,15 @@ export default function SnippetDetailsScreen() {
             </View>
           </View>
 
-          <TouchableOpacity style={[styles.generateButton, { backgroundColor: theme.primary }]}>
+          <TouchableOpacity
+            style={[styles.generateButton, { backgroundColor: theme.primary, opacity: isGeneratingExplanation ? 0.7 : 1 }]}
+            onPress={handleGenerateExplanation}
+            disabled={isGeneratingExplanation}
+          >
             <MaterialCommunityIcons name="lightning-bolt" size={16} color={theme.switchThumb} style={{ marginRight: 6 }} />
-            <Text style={[styles.generateButtonText, { color: theme.switchThumb }]}>GENERATE EXPLANATION</Text>
+            <Text style={[styles.generateButtonText, { color: theme.switchThumb }]}>{isGeneratingExplanation ? "GENERATING..." : "GENERATE EXPLANATION"}</Text>
           </TouchableOpacity>
+          {!!explanation && <Text style={[styles.explanationText, { color: theme.text }]}>{explanation}</Text>}
         </View>
 
         <View style={styles.gridRow}>
@@ -429,6 +493,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "700",
     letterSpacing: 0.5,
+  },
+  explanationText: {
+    marginTop: 12,
+    fontSize: 13,
+    lineHeight: 20,
   },
   gridRow: {
     flexDirection: "row",
