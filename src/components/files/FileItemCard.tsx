@@ -9,9 +9,21 @@ interface FileItemCardProps {
   preview: string;
   icon: keyof typeof MaterialCommunityIcons.glyphMap;
   iconColor: string;
+  onDownload?: () => void;
+  onShare?: () => void;
+  onDelete?: () => void;
 }
 
-export default function FileItemCard({ filename, meta, preview, icon, iconColor }: FileItemCardProps) {
+export default function FileItemCard({
+  filename,
+  meta,
+  preview,
+  icon,
+  iconColor,
+  onDownload,
+  onShare,
+  onDelete,
+}: FileItemCardProps) {
   const { theme } = useTheme();
 
   return (
@@ -29,13 +41,13 @@ export default function FileItemCard({ filename, meta, preview, icon, iconColor 
 
         {/* Action Tray */}
         <View style={styles.actionTray}>
-          <TouchableOpacity style={[styles.iconButton, { backgroundColor: theme.cardAlt }]}>
+          <TouchableOpacity style={[styles.iconButton, { backgroundColor: theme.cardAlt }]} onPress={onDownload}>
             <Feather name="download" size={16} color={theme.subText} />
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.iconButton, { backgroundColor: theme.cardAlt }]}>
+          <TouchableOpacity style={[styles.iconButton, { backgroundColor: theme.cardAlt }]} onPress={onShare}>
             <Feather name="share-2" size={16} color={theme.subText} />
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.iconButton, { backgroundColor: theme.cardAlt }]}>
+          <TouchableOpacity style={[styles.iconButton, { backgroundColor: theme.cardAlt }]} onPress={onDelete}>
             <Feather name="trash-2" size={16} color={theme.danger} />
           </TouchableOpacity>
         </View>

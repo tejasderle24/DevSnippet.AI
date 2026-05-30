@@ -4,7 +4,11 @@ import { useTheme } from "@/context/ThemeContext";
 
 const CATEGORIES = ["ALL FILES", "IMAGES", "DOCS", "CODE", "AUDIO"];
 
-export default function FileCategoryFilters() {
+interface FileCategoryFiltersProps {
+  onChange?: (category: string) => void;
+}
+
+export default function FileCategoryFilters({ onChange }: FileCategoryFiltersProps) {
   const [activeTab, setActiveTab] = useState("ALL FILES");
   const { theme } = useTheme();
 
@@ -19,7 +23,10 @@ export default function FileCategoryFilters() {
         return (
           <TouchableOpacity
             key={category}
-            onPress={() => setActiveTab(category)}
+            onPress={() => {
+              setActiveTab(category);
+              onChange?.(category);
+            }}
             style={[
               styles.pill,
               isActive

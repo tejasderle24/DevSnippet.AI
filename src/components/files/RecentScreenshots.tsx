@@ -2,25 +2,31 @@ import React from "react";
 import { View, Text, ScrollView, Image, StyleSheet, TouchableOpacity } from "react-native";
 import { useTheme } from "@/context/ThemeContext";
 
-const SCREENSHOTS = [
-  { id: "1", name: "auth_flow_v2.png", uri: "https://images.unsplash.com/photo-1618477388954-7852f32655ec?q=80&w=400" },
-  { id: "2", name: "db_schema.png", uri: "https://images.unsplash.com/photo-1607799279861-4dd421887fb3?q=80&w=400" },
-];
+interface ScreenshotItem {
+  id: string;
+  name: string;
+  uri: string;
+}
 
-export default function RecentScreenshots() {
+interface RecentScreenshotsProps {
+  screenshots: ScreenshotItem[];
+  onViewAll?: () => void;
+}
+
+export default function RecentScreenshots({ screenshots, onViewAll }: RecentScreenshotsProps) {
   const { theme } = useTheme();
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={[styles.sectionTitle, { color: theme.text }]}>Recent Screenshots</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={onViewAll}>
           <Text style={[styles.viewAll, { color: theme.subText }]}>VIEW ALL</Text>
         </TouchableOpacity>
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollContainer}>
-        {SCREENSHOTS.map((item) => (
+        {screenshots.map((item) => (
           <View key={item.id} style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
             <Image source={{ uri: item.uri }} style={styles.image} resizeMode="cover" />
             <View style={styles.overlay}>
@@ -28,6 +34,11 @@ export default function RecentScreenshots() {
             </View>
           </View>
         ))}
+        {screenshots.length === 0 && (
+          <View style={[styles.emptyCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <Text style={{ color: theme.subText, fontSize: 12 }}>No screenshots attached yet.</Text>
+          </View>
+        )}
       </ScrollView>
     </View>
   );
@@ -64,6 +75,14 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     position: "relative",
     borderWidth: 1,
+  },
+  emptyCard: {
+    width: 210,
+    height: 130,
+    borderRadius: 12,
+    borderWidth: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   image: {
     width: "100%",
